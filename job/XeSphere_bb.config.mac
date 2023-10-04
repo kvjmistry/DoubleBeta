@@ -1,0 +1,54 @@
+
+## ----------------------------------------------------------------------------
+## nexus | XeSphere.config.mac
+##
+## Configuration macro to simulate 0nubb radioactive decays from thethe
+## copper plate of the tracking plane in the NEXT-100 detector.
+##
+## The NEXT Collaboration
+## ----------------------------------------------------------------------------
+
+##### VERBOSITY #####
+
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+
+/process/em/verbose 0
+#/process/eLoss/StepFunction 0.2 0.01 mm
+
+
+# use C++ translation of DECAY0
+# for 0 neutrino  bb to Barium Ground state.
+/Generator/Decay0Interface/Xe136DecayMode 1
+/Generator/Decay0Interface/EnergyThreshold 0.1
+/Generator/Decay0Interface/Ba136FinalState 0
+/Generator/Decay0Interface/region INSIDE
+/Generator/Decay0Interface/inputFile none
+
+##### GENERATOR #####
+#/Generator/SingleParticle/particle e-
+#/Generator/SingleParticle/region INSIDE
+#/Generator/SingleParticle/min_energy 2.5 MeV
+#/Generator/SingleParticle/max_energy 2.5 MeV
+
+/Actions/DefaultEventAction/min_energy 1.5 MeV
+
+/Geometry/XeSphere/LXe false
+/Geometry/XeSphere/pressure 1. bar
+/Geometry/XeSphere/radius 10. m
+
+##### PHYSICS #####
+## No full simulation
+/PhysicsList/Nexus/clustering          false
+/PhysicsList/Nexus/drift               false
+/PhysicsList/Nexus/electroluminescence false
+
+/nexus/random_seed 0
+/nexus/persistency/start_id 0
+
+
+##### PERSISTENCY #####
+/nexus/persistency/output_file 0nuBB2.next
+## eventType options: bb0nu, bb2nu, background
+/nexus/persistency/event_type background
