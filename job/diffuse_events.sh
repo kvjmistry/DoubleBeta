@@ -64,6 +64,8 @@ for i in $(eval echo "{1..${FILES_PER_JOB}}"); do
     echo; echo; echo;
 done
 
+rm 0nuBB2.next.h5
+
 # Remove the config files if not the first jobid
 if [ ${SLURM_ARRAY_TASK_ID} -ne 1 ]; then
     rm -v *.conf 
