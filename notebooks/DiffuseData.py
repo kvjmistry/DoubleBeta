@@ -71,9 +71,6 @@ def generate_random(row):
 for index, e in enumerate(hits.event_id.unique()):
     print("On Event:", e)
 
-    if (e > 20):
-        break
-    
     # Select the event
     event = hits[hits.event_id == e]
 
