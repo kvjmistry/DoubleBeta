@@ -59,7 +59,7 @@ for i in $(eval echo "{1..${FILES_PER_JOB}}"); do
     echo "Running Diffusion"
     python /home/argon/Projects/Krishan/DoubleBeta/notebooks/DiffuseData.py
 
-    mv xesphere.h5 xesphere_1bar_$MODE_${SLURM_ARRAY_TASK_ID}.h5
+    mv xesphere.h5 xesphere_1bar_${MODE}_${SLURM_ARRAY_TASK_ID}.h5
 
     echo; echo; echo;
 done
