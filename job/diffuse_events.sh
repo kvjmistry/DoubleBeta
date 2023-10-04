@@ -17,7 +17,7 @@ JOBNAME="DIFFUSION"
 FILES_PER_JOB=1
 N_EVENTS=50
 
-MODE="eminius"
+MODE="eminus"
 CONFIG=XeSphere_$MODE.config.mac 
 INIT=XeSphere_$MODE.init.mac
 
