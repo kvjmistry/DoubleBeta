@@ -14,7 +14,7 @@ warnings.filterwarnings('ignore', category=pd.errors.PerformanceWarning)
 
 # Load in the hits
 print("Loading hits")
-hits = pd.read_hdf("0nuBB2.next.h5", 'hits')
+hits = pd.read_hdf("0nuBB2.next.h5", 'MC/hits')
 print("Finished loading hits")
 
 # init the RNG
