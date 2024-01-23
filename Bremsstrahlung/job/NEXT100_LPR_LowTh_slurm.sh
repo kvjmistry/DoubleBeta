@@ -32,6 +32,7 @@ python /home/argon/Projects/Krishan/DoubleBeta/Bremsstrahlung/collect_lowTh.py $
 
 mv LowTh.h5 /home/argon/Projects/Krishan/DoubleBeta/Bremsstrahlung/job/job_output/$(basename "$inputfile" .h5)_lowTh.h5
 
+rm -r /home/argon/Projects/Krishan/DoubleBeta/Bremsstrahlung/job/job_output/job${SLURM_ARRAY_TASK_ID}
 
 echo "FINISHED....EXITING"
 
