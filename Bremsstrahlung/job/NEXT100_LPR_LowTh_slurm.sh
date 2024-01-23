@@ -1,7 +1,6 @@
 #!/bin/bash
 #SBATCH -J NEXT100_LPR_LowTh # A single job name for the array
-#SBATCH -c 1 # Number of cores
-#SBATCH -p shared # Partition
+#SBATCH --nodes=1
 #SBATCH --mem 4000 # Memory request (6Gb)
 #SBATCH -t 0-1:00 # Maximum execution time (D-HH:MM)
 #SBATCH -o NEXT100_LPR_LowTh_%A_%a.out # Standard output
