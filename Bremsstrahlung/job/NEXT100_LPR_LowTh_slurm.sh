@@ -30,7 +30,7 @@ cd job_output/job${SLURM_ARRAY_TASK_ID}
 echo "Running Script" 
 python /home/argon/Projects/Krishan/DoubleBeta/Bremsstrahlung/collect_lowTh.py ${inputfile}
 
-mv LowTh.h5 ../job_output/$(basename "$inputfile")_lowTh.h5
+mv LowTh.h5 /home/argon/Projects/Krishan/DoubleBeta/Bremsstrahlung/job/job_output/$(basename "$inputfile" .h5)_lowTh.h5
 
 
 echo "FINISHED....EXITING"
