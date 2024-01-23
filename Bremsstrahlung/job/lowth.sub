@@ -21,7 +21,7 @@ error  = jobs/$(jobname)/jobid$(NewProcess)/$(Cluster)_$(NewProcess).err
 output = jobs/$(jobname)/jobid$(NewProcess)/$(Cluster)_$(NewProcess).out
 
 # Transfer input files
-transfer_input_files = $(OSDF_LOCATION)/job/LPR/sophronia/$(file), $(HOME_LOCATION)/Bremsstrahlung/job/$(SCRIPT)
+transfer_input_files = $(OSDF_LOCATION)/job/LPR/sophronia/$(file), $(HOME_LOCATION)/Bremsstrahlung/$(SCRIPT)
 
 # Transfer output files
 transfer_output_remaps = "LowTh.h5=$(OSDF_LOCATION)/job/LPR/$(jobname)/$(jobname)_$(Cluster)_$(NewProcess).next.h5"
