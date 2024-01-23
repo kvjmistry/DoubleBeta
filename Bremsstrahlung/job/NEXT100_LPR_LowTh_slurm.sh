@@ -28,7 +28,7 @@ cd job_output/job${SLURM_ARRAY_TASK_ID}
 
 # Python
 echo "Running Script" 
-python collect_lowTh.py ${inputfile}
+python /home/argon/Projects/Krishan/DoubleBeta/Bremsstrahlung/collect_lowTh.py ${inputfile}
 
 mv LowTh.h5 ../job_output/$(basename "$inputfile")_lowTh.h5
 
