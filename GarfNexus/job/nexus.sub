@@ -33,7 +33,7 @@ transfer_output_remaps = "$(jobname).h5 = /protected/krishan.mistry/job/$(jobnam
 +JobDurationCategory = "Medium"
 
 # Use a singularity image to submit the file. The image should be stored in the protected area of your workspace
-+SingularityImage = "$(OSDF_LOCATION)/containers/docker_garfnexus.sif"
++SingularityImage = "$(OSDF_LOCATION)/containers/docker_garfnexus_v2.sif"
 
 
 # Tell HTCondor requirements (e.g., operating system) your job needs, 
