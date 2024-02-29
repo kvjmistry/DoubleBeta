@@ -15,7 +15,7 @@
 
 ##### GEOMETRY #####
 /Geometry/Next100/elfield false
-/Geometry/Next100/max_step_size 0.1. mm
+/Geometry/Next100/max_step_size 0.1 mm
 /Geometry/Next100/pressure 10 bar
 /Geometry/Next100/EL_field 15 kilovolt/cm
 

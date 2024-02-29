@@ -32,6 +32,7 @@ echo "The seed number is: ${SEED}"
 # Change the config in the files
 sed -i "s#.*random_seed.*#/nexus/random_seed ${SEED}#" ${CONFIG}
 sed -i "s#.*start_id.*#/nexus/persistency/start_id ${SEED}#" ${CONFIG}
+sed -i "s#.*output_file.*#/nexus/persistency/output_file ${JOBNAME}#" ${CONFIG}
 
 # Print out the config and init files
 cat ${INIT}
@@ -39,7 +40,11 @@ cat ${CONFIG}
 
 # NEXUS
 echo "Running NEXUS" 
+alias python="python3"
 nexus -n $N_EVENTS ${INIT}
+python3 slim_files.py ${JOBNAME}
+
+rm "${JOBNAME}.h5"
 
 ls -ltrh
 
