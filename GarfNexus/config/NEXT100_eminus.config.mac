@@ -1,0 +1,45 @@
+## ----------------------------------------------------------------------------
+## nexus | NEXT100.config.mac
+##
+## Configuration macro to simulate electrons in Next100
+##
+## The NEXT Collaboration
+## ----------------------------------------------------------------------------
+
+##### VERBOSITY #####
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+
+/process/em/verbose 0
+
+##### GEOMETRY #####
+/Geometry/Next100/elfield false
+/Geometry/Next100/max_step_size 0.1. mm
+/Geometry/Next100/pressure 10 bar
+/Geometry/Next100/EL_field 15 kilovolt/cm
+
+##### GENERATOR #####
+/Generator/SingleParticle/particle e-
+/Generator/SingleParticle/min_energy 1 MeV
+/Generator/SingleParticle/max_energy 1 MeV
+/Generator/SingleParticle/region CENTER
+
+##### ACTIONS #####
+/Actions/DefaultEventAction/min_energy 10.0 keV
+/Actions/DefaultEventAction/max_energy 2.55 MeV
+
+##### PHYSICS #####
+## No full simulation
+/PhysicsList/Nexus/clustering          false
+/PhysicsList/Nexus/drift               false
+/PhysicsList/Nexus/electroluminescence false
+/PhysicsList/Nexus/fastsim true
+/PhysicsList/Nexus/nest true
+
+##### PERSISTENCY #####
+/nexus/persistency/output_file NEXT100_eminus
+## eventType options: bb0nu, bb2nu, background
+/nexus/persistency/event_type background
+/nexus/random_seed 10
+/nexus/persistency/start_id 10

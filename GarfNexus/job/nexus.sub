@@ -1,0 +1,50 @@
+# nexus.sub
+
+# The job title here.
+# jobname=ATPC_0nubb
+jobname=NEXT100_eminus
+
+CONFIG=$(jobname).config.mac
+INIT=$(jobname).init.mac
+
+OSDF_LOCATION=osdf:///ospool/PROTECTED/krishan.mistry/
+HOME_LOCATION=/home/krishan.mistry/code/DoubleBeta/GarfNexus/
+
+# newjobid = $(Process) + 100
+#NewProcess = $INT(newjobid, %d)
+NewProcess = $(Process)
+
+executable = $(jobname)_job.sh
+arguments = $(NewProcess) $(jobname) 
+
+# Specify the name of the log, standard error, and standard output (or "screen output") files. Wherever you see $(Cluster), HTCondor will insert the 
+#  queue number assigned to this set of jobs at the time of submission.
+log    = jobs/$(jobname)/jobid$(NewProcess)/$(Cluster)_$(NewProcess).log
+error  = jobs/$(jobname)/jobid$(NewProcess)/$(Cluster)_$(NewProcess).err
+output = jobs/$(jobname)/jobid$(NewProcess)/$(Cluster)_$(NewProcess).out
+
+# Transfer input files
+transfer_input_files = $(HOME_LOCATION)/config/$(INIT),$(HOME_LOCATION)/config/$(CONFIG)
+
+# Transfer output files
+transfer_output_remaps = "$(jobname).h5 = /protected/krishan.mistry/job/$(jobname)/$(jobname)_$(Cluster)_$(NewProcess).h5"
+
+# Specify Job duration category as "Medium" (expected runtime <10 hr) or "Long" (expected runtime <20 hr). 
++JobDurationCategory = "Medium"
+
+# Use a singularity image to submit the file. The image should be stored in the protected area of your workspace
++SingularityImage = "$(OSDF_LOCATION)/containers/docker_garfnexus.sif"
+
+
+# Tell HTCondor requirements (e.g., operating system) your job needs, 
+# what amount of compute resources each job will need on the computer where it runs.
+requirements = (OSGVO_OS_STRING == "RHEL 7")
+request_cpus = 1
+request_memory = 4GB
+request_disk = 8GB
+
+# If submitting more than 10k jobs use this statement
+# max_idle = 2000
+
+# Tell HTCondor the number of instances to run:
+queue 1000
