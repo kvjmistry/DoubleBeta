@@ -30,7 +30,7 @@ transfer_output_remaps = "LowTh.h5=$(OSDF_LOCATION)/job/LPR/$(jobname)/$(jobname
 +JobDurationCategory = "Medium"
 
 # Use a singularity image to submit the file. The image should be stored in the protected area of your workspace
-+SingularityImage = "$(OSDF_LOCATION)/containers/IC_container.sif"
++SingularityImage = "$(OSDF_LOCATION)/containers/ic_container2.sif"
 
 
 # Tell HTCondor requirements (e.g., operating system) your job needs, 
