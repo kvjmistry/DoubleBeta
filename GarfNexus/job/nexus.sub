@@ -1,7 +1,6 @@
 # nexus.sub
 
 # The job title here.
-# jobname=ATPC_0nubb
 jobname=NEXT100_eminus
 
 SCRIPT=slim_files.py
@@ -34,7 +33,7 @@ transfer_output_remaps = "$(jobname)_slim.h5 = /protected/krishan.mistry/job/$(j
 +JobDurationCategory = "Medium"
 
 # Use a singularity image to submit the file. The image should be stored in the protected area of your workspace
-+SingularityImage = "$(OSDF_LOCATION)/containers/docker_garfnexus_v6.sif"
++SingularityImage = "$(OSDF_LOCATION)/containers/docker_garfnexus_v7.sif"
 
 
 # Tell HTCondor requirements (e.g., operating system) your job needs, 
@@ -42,7 +41,7 @@ transfer_output_remaps = "$(jobname)_slim.h5 = /protected/krishan.mistry/job/$(j
 requirements = (OSGVO_OS_STRING == "RHEL 7")
 request_cpus = 1
 request_memory = 4GB
-request_disk = 8GB
+request_disk = 6GB
 
 # If submitting more than 10k jobs use this statement
 # max_idle = 2000

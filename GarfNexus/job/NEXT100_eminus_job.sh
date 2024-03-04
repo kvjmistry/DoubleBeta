@@ -17,7 +17,7 @@ start=`date +%s`
 
 # Setup nexus
 echo "Setting Up NEXUS" 
-source /software/nexus/setup_nexus.sh
+source /software/garfnexus/setup_nexus.sh
 
 # Set the configurable variables
 N_EVENTS=5
