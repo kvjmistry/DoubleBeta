@@ -11,7 +11,7 @@ start=`date +%s`
 # Set the configurable variables
 JOBNAME="NEXT100_eminus"
 # Set the configurable variables
-N_EVENTS=1
+N_EVENTS=50
 CONFIG=${JOBNAME}.config.mac
 INIT=${JOBNAME}.init.mac
 
@@ -26,7 +26,7 @@ cp /home/argon/Projects/Krishan/DoubleBeta/GarfNexus/scripts/slim_files.py .
 # Setup nexus and run
 echo "Setting Up NEXUS" 2>&1 | tee -a log_nexus_"${SLURM_ARRAY_TASK_ID}".txt
 source /home/argon/Projects/Krishan/GarfieldNexus/nexus/setup_cluster.sh
-
+source /home/argon/Projects/Krishan/IC/setup_IC.sh
 
 # Calculate the unique seed number  
 SEED=$((${N_EVENTS}*(${SLURM_ARRAY_TASK_ID} - 1) + ${N_EVENTS}))
