@@ -16,7 +16,7 @@ CONFIG=${JOBNAME}.config.mac
 INIT=${JOBNAME}.init.mac
 
 # Create the directory
-cd /media/argon/HDD_8tb/
+cd /media/argon/HDD_8tb/Krishan/
 mkdir -p $JOBNAME/jobid_"${SLURM_ARRAY_TASK_ID}"
 cd $JOBNAME/jobid_"${SLURM_ARRAY_TASK_ID}"
 
