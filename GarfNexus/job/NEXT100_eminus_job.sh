@@ -20,7 +20,7 @@ echo "Setting Up NEXUS"
 source /software/garfnexus/setup_nexus.sh
 
 # Set the configurable variables
-N_EVENTS=5
+N_EVENTS=50
 CONFIG=${JOBNAME}.config.mac
 INIT=${JOBNAME}.init.mac
 
