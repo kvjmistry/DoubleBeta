@@ -18,6 +18,10 @@
 /Geometry/Next100/max_step_size 0.1 mm
 /Geometry/Next100/pressure 10 bar
 /Geometry/Next100/EL_field 15 kilovolt/cm
+/Geometry/Next100/drift_transv_diff 1.44 mm/sqrt(cm)
+/Geometry/Next100/drift_long_diff 0.408 mm/sqrt(cm)
+/Geometry/PmtR11410/time_binning 25. nanosecond
+/Geometry/Next100/sipm_time_binning  1. microsecond
 
 ##### GENERATOR #####
 /Generator/SingleParticle/particle e-

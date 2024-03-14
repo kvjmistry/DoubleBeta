@@ -20,7 +20,7 @@ echo "Setting Up NEXUS"
 source /software/garfnexus/setup_nexus.sh
 
 # Set the configurable variables
-N_EVENTS=50
+N_EVENTS=1
 CONFIG=${JOBNAME}.config.mac
 INIT=${JOBNAME}.init.mac
 
@@ -44,7 +44,7 @@ alias python="python3"
 nexus -n $N_EVENTS ${INIT}
 python3 slim_files.py ${JOBNAME}
 
-rm "${JOBNAME}.h5"
+#rm "${JOBNAME}.h5"
 
 ls -ltrh
 

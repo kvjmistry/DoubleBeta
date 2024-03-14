@@ -27,13 +27,14 @@ output = jobs/$(jobname)/jobid$(NewProcess)/$(Cluster)_$(NewProcess).out
 transfer_input_files = $(HOME_LOCATION)/config/$(INIT),$(HOME_LOCATION)/config/$(CONFIG),$(HOME_LOCATION)/scripts/$(SCRIPT)
 
 # Transfer output files
-transfer_output_remaps = "$(jobname)_slim.h5 = /protected/krishan.mistry/job/$(jobname)/$(jobname)_$(Cluster)_$(NewProcess).h5"
+# transfer_output_remaps = "$(jobname)_slim.h5 = /protected/krishan.mistry/job/$(jobname)/$(jobname)_$(Cluster)_$(NewProcess).h5"
+transfer_output_remaps = "$(jobname).h5 = /protected/krishan.mistry/job/$(jobname)/$(jobname)_$(Cluster)_$(NewProcess).h5"
 
 # Specify Job duration category as "Medium" (expected runtime <10 hr) or "Long" (expected runtime <20 hr). 
 +JobDurationCategory = "Medium"
 
 # Use a singularity image to submit the file. The image should be stored in the protected area of your workspace
-+SingularityImage = "$(OSDF_LOCATION)/containers/docker_garfnexus_v10.sif"
++SingularityImage = "$(OSDF_LOCATION)/containers/docker_garfnexus_v11.sif"
 
 
 # Tell HTCondor requirements (e.g., operating system) your job needs, 
