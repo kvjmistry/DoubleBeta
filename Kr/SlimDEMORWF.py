@@ -9,6 +9,9 @@ import os
 kdst_path = "../data/DEMO/kdst/"
 raw_path  = "../data/DEMO/raw/"
 
+kdst_path = "/media/argon/HDD_8tb/Krishan/DEMO/kdst/"
+raw_path  = "/media/argon/HDD_8tb/Krishan/DEMO/raw/"
+
 file_list = os.listdir(kdst_path)
 
 evt_filter_kdst = []
@@ -18,13 +21,13 @@ for file in file_list:
 
     path = kdst_path + file
     kdst = pd.read_hdf(path, "/DST/Events")
-    kdst = kdst[kdst.nS1 == 1]
-    kdst = kdst[kdst.nS2 == 1]
+    # kdst = kdst[kdst.nS1 == 1]
+    kdst = kdst[kdst.nS2 > 1]
     # kdst = kdst[kdst.Z < 25]
     kdst = kdst[  np.sqrt(kdst.X*kdst.X + kdst.Y*kdst.Y) < 60]
 
     # This removes events where the zrms is not consistent with the z value
-    kdst = kdst[ (kdst.Zrms > 0.0035*kdst.Z+0.6) & (kdst.Zrms < 0.0035*kdst.Z+1)  ]
+    # kdst = kdst[ (kdst.Zrms > 0.0035*kdst.Z+0.75) & (kdst.Zrms < 0.0035*kdst.Z+0.95)  ]
 
     # display(kdst)
 
@@ -75,8 +78,8 @@ for file in file_list_raw:
             df["z"] = z
             df["event"] = evt_no
 
-            df = df[df.times > 395]
-            df = df[df.times < 415]
+            df = df[df.times > 385]
+            df = df[df.times < 425]
     
             # display(df_merged)
 
