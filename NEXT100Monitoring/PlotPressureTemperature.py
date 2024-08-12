@@ -27,7 +27,7 @@ def PlotPressure(ax1,ax2, varname, df_mean,df, col):
     # ax2.plot(df_mean.index, df_mean[f'{varname}Delta'], marker='o', linestyle='-', color = col)
     ax2.plot(df_mean.index, df_mean[f'{varname}'], marker='o', linestyle='-', color = "k", label = "Hourly Mean")
     ax2.set_xlabel('Date')
-    ax2.set_ylabel(f'Pressure [mbar]')
+    ax2.set_ylabel(f'Pressure [bar]')
     ax2.set_title(f"{varname}")
 
     for label in ax2.get_xticklabels():
@@ -181,7 +181,7 @@ Gas_files = '/Users/mistryk2/Desktop/Pressure_Data/'
 # Define the directory containing the text files
 DICE_files = '/Users/mistryk2/Desktop/Dice_Temps/'
 
-HHV_files ='/Users/mistryk2/Desktop/HV_Data/'
+# HHV_files ='/Users/mistryk2/Desktop/HV_Data/'
 
 # path = r'C:\Users\next\DIPC Dropbox\NextElec Zulo\Nextelec\- Slow Control NEXT-100\SC Reports'
 # Gas_files = fr'{path}\GAS\Data\\'
@@ -217,16 +217,16 @@ DICE_paths = sorted(glob.glob(f"{DICE_files}/TP_SiPM_BS*.txt"), reverse=True)[0:
 DICE_Temps, DICE_TempsMean = LoadData(DICE_paths)
 # --------------------------------------------------------
 # HHV
-cathode_paths = sorted(glob.glob(f"{HHV_files}/*CATHODE*.txt"), reverse = True)[0:N_days]
-gate_paths    = sorted(glob.glob(f"{HHV_files}/*GATE*.txt"), reverse = True)[0:N_days]
-LR_paths      = sorted(glob.glob(f"{HHV_files}/*LAST_RING*.txt"), reverse = True)[0:N_days]
+# cathode_paths = sorted(glob.glob(f"{HHV_files}/*CATHODE*.txt"), reverse = True)[0:N_days]
+# gate_paths    = sorted(glob.glob(f"{HHV_files}/*GATE*.txt"), reverse = True)[0:N_days]
+# LR_paths      = sorted(glob.glob(f"{HHV_files}/*LAST_RING*.txt"), reverse = True)[0:N_days]
 
-Cath_HV, Cath_HVMean = LoadData(cathode_paths)
-Gate_HV, Gate_HVMean = LoadData(gate_paths)
-LR_HV, LR_HVMean     = LoadData(LR_paths)
+# Cath_HV, Cath_HVMean = LoadData(cathode_paths)
+# Gate_HV, Gate_HVMean = LoadData(gate_paths)
+# LR_HV, LR_HVMean     = LoadData(LR_paths)
 
-print("Printing Cathode HV...")
-print(Cath_HV)
+# print("Printing Cathode HV...")
+# print(Cath_HV)
 
 # --------------------------------------------------
 # Plot the pressures
@@ -243,10 +243,10 @@ PlotVacuum(ax2, "VG6", GasVacuumMean, GasVacuum, "DarkOrange")
 
 # --------------------------------------------------
 # Plot the HV
-fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(15, 8))
-PlotHV(ax1, "Current (mA)", Cath_HV, Cath_HVMean, "Teal")
-PlotHV(ax2, "Current (mA)", Gate_HV, Gate_HVMean, "DarkOrange")
-PlotHV(ax3, "Current (mA)", LR_HV, LR_HVMean, "DarkRed")
+# fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(15, 8))
+# PlotHV(ax1, "Current (mA)", Cath_HV, Cath_HVMean, "Teal")
+# PlotHV(ax2, "Current (mA)", Gate_HV, Gate_HVMean, "DarkOrange")
+# PlotHV(ax3, "Current (mA)", LR_HV, LR_HVMean, "DarkRed")
 
 # --------------------------------------------------
 # Plot the DICE Temps
