@@ -37,6 +37,41 @@ def PlotPressure(ax1,ax2, varname, df_mean,df, col):
     ax2.legend()
 
 
+def PlotVacuum(ax1, varname, df_mean,df, col):
+
+    ax1.plot(df.index, df[f'{varname}'], linestyle='-', color = col, alpha = 0.3, label = "Raw")
+    # ax2.plot(df_mean.index, df_mean[f'{varname}Delta'], marker='o', linestyle='-', color = col)
+    ax1.plot(df_mean.index, df_mean[f'{varname}'], linestyle='-', color = "k", label = "Hourly Mean")
+    ax1.set_xlabel('Date')
+    ax1.set_ylabel(f'Pressure [bar]')
+    ax1.set_title(f"{varname}")
+
+    for label in ax1.get_xticklabels():
+        label.set_rotation(45)
+        label.set_horizontalalignment('right')
+
+    ax1.legend()
+
+    if (varname == "VG5"):
+        ax1.set_ylim(0.8e-6,1.4e-6)
+    if (varname == "VG6"):
+        ax1.set_ylim(6.12e-3,6.3e-3)
+
+def PlotHV(ax1, varname, df_mean,df, col):
+
+    ax1.plot(df.index, df[f'{varname}'], linestyle='-', color = col, alpha = 0.3, label = "Raw")
+    # ax1.plot(df_mean.index, df_mean[f'{varname}'], linestyle='-', color = "k", label = "Hourly Mean")
+    ax1.set_xlabel('Date')
+    ax1.set_ylabel(f'Voltage [V]')
+    ax1.set_title(f"{varname}")
+
+    for label in ax1.get_xticklabels():
+        label.set_rotation(45)
+        label.set_horizontalalignment('right')
+
+    ax1.legend()
+
+
 def LoadData(paths):
 
     dfs = []
@@ -68,6 +103,8 @@ def LoadData(paths):
     print(df.head())
 
     df.set_index('Datetime', inplace=True)
+
+    df = df.sort_index()
 
     df = df.select_dtypes(include=[np.number])
 
@@ -144,6 +181,8 @@ Gas_files = '/Users/mistryk2/Desktop/Pressure_Data/'
 # Define the directory containing the text files
 DICE_files = '/Users/mistryk2/Desktop/Dice_Temps/'
 
+HHV_files ='/Users/mistryk2/Desktop/HV_Data/'
+
 # path = r'C:\Users\next\DIPC Dropbox\NextElec Zulo\Nextelec\- Slow Control NEXT-100\SC Reports'
 # Gas_files = fr'{path}\GAS\Data\\'
 # DICE_files = fr'{path}\TP\Data\\'
@@ -151,7 +190,10 @@ DICE_files = '/Users/mistryk2/Desktop/Dice_Temps/'
 # Number of days to look back
 N_days = 6
 
-# Get the pressure files from the previous 5 days
+
+
+# --------------------------------------------------------
+# PRESSURE
 pressure_paths = sorted(glob.glob(f"{Gas_files}/*Pressure*.txt"), reverse = True)[0:N_days]
 
 GasPressure, GasPressureMean = LoadData(pressure_paths)
@@ -159,14 +201,32 @@ GasPressure, GasPressureMean = LoadData(pressure_paths)
 GasPressureMean["PG3Delta"] = GasPressureMean["PG3"] - GasPressureMean["PG3"].iloc[0]
 GasPressureMean["PG6Delta"] = GasPressureMean["PG6"] - GasPressureMean["PG6"].iloc[0]
 
+# --------------------------------------------------------
+# VACUUM
+vacuum_paths = sorted(glob.glob(f"{Gas_files}/*Vacuum*.txt"), reverse = True)[0:N_days]
 
+GasVacuum, GasVacuumMean = LoadData(vacuum_paths)
+
+# --------------------------------------------------------
+# DICE
 # Load in the DICE
 # Use glob to get all text files in the directory
 DICE_paths = sorted(glob.glob(f"{DICE_files}/TP_SiPM_BS*.txt"), reverse=True)[0:N_days]
 
 # Initialize an empty list to store individual DataFrames
 DICE_Temps, DICE_TempsMean = LoadData(DICE_paths)
+# --------------------------------------------------------
+# HHV
+cathode_paths = sorted(glob.glob(f"{HHV_files}/*CATHODE*.txt"), reverse = True)[0:N_days]
+gate_paths    = sorted(glob.glob(f"{HHV_files}/*GATE*.txt"), reverse = True)[0:N_days]
+LR_paths      = sorted(glob.glob(f"{HHV_files}/*LAST_RING*.txt"), reverse = True)[0:N_days]
 
+Cath_HV, Cath_HVMean = LoadData(cathode_paths)
+Gate_HV, Gate_HVMean = LoadData(gate_paths)
+LR_HV, LR_HVMean     = LoadData(LR_paths)
+
+print("Printing Cathode HV...")
+print(Cath_HV)
 
 # --------------------------------------------------
 # Plot the pressures
@@ -174,6 +234,19 @@ fig, axes = plt.subplots(2,2, figsize=(15, 8))
 ax1, ax2, ax3, ax4 = axes.flatten()
 PlotPressure(ax1, ax2, "PG3", GasPressureMean, GasPressure, "Teal")
 PlotPressure(ax3, ax4, "PG6", GasPressureMean, GasPressure, "DarkOrange")
+
+# --------------------------------------------------
+# Plot the Vacuums
+fig, (ax1, ax2) = plt.subplots(1,2, figsize=(15, 8))
+PlotVacuum(ax1, "VG5", GasVacuumMean, GasVacuum, "Teal")
+PlotVacuum(ax2, "VG6", GasVacuumMean, GasVacuum, "DarkOrange")
+
+# --------------------------------------------------
+# Plot the HV
+fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(15, 8))
+PlotHV(ax1, "Current (mA)", Cath_HV, Cath_HVMean, "Teal")
+PlotHV(ax2, "Current (mA)", Gate_HV, Gate_HVMean, "DarkOrange")
+PlotHV(ax3, "Current (mA)", LR_HV, LR_HVMean, "DarkRed")
 
 # --------------------------------------------------
 # Plot the DICE Temps
