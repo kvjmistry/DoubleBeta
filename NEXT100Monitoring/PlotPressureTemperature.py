@@ -53,9 +53,9 @@ def PlotVacuum(ax1, varname, df_mean,df, col):
     ax1.legend()
 
     if (varname == "VG5"):
-        ax1.set_ylim(0.8e-6,1.4e-6)
+        ax1.set_ylim(0.8e-6,1.1e-2)
     if (varname == "VG6"):
-        ax1.set_ylim(6.12e-3,6.3e-3)
+        ax1.set_ylim(6.12e-3,6.2e-3)
 
 def PlotHV(ax1, varname, df_mean,df, col):
 
@@ -126,6 +126,7 @@ def PlotDICE(ax1, ax2, df, varname, title):
         all_vals = np.append(all_vals,df[f'DICE{i}{varname}'])
         mean_vals = np.append(mean_vals,np.mean(df[f'DICE{i}{varname}']))
 
+    all_vals = np.nan_to_num(all_vals,0)
     median_of_means = np.median(mean_vals)
     mad = np.median(np.abs(mean_vals - median_of_means))
     
@@ -200,6 +201,10 @@ GasPressure, GasPressureMean = LoadData(pressure_paths)
 
 GasPressureMean["PG3Delta"] = GasPressureMean["PG3"] - GasPressureMean["PG3"].iloc[0]
 GasPressureMean["PG6Delta"] = GasPressureMean["PG6"] - GasPressureMean["PG6"].iloc[0]
+GasPressureMean["PG5Delta"] = GasPressureMean["PG5"] - GasPressureMean["PG5"].iloc[0]
+GasPressureMean["PG2Delta"] = GasPressureMean["PG2"] - GasPressureMean["PG2"].iloc[0]
+GasPressureMean["PG8Delta"] = GasPressureMean["PG8"] - GasPressureMean["PG8"].iloc[0]
+GasPressureMean["DFDelta"] = GasPressureMean["DF"] - GasPressureMean["DF"].iloc[0]
 
 # --------------------------------------------------------
 # VACUUM
@@ -228,18 +233,34 @@ DICE_Temps, DICE_TempsMean = LoadData(DICE_paths)
 # print("Printing Cathode HV...")
 # print(Cath_HV)
 
+Today="18_08_2024"
+
 # --------------------------------------------------
 # Plot the pressures
 fig, axes = plt.subplots(2,2, figsize=(15, 8))
 ax1, ax2, ax3, ax4 = axes.flatten()
 PlotPressure(ax1, ax2, "PG3", GasPressureMean, GasPressure, "Teal")
 PlotPressure(ax3, ax4, "PG6", GasPressureMean, GasPressure, "DarkOrange")
+plt.savefig(f"plots/{Today}_PG6_PG3", dpi=200)
+
+fig, axes = plt.subplots(2,2, figsize=(15, 8))
+ax1, ax2, ax3, ax4 = axes.flatten()
+PlotPressure(ax1, ax2, "PG2", GasPressureMean, GasPressure, "Teal")
+PlotPressure(ax3, ax4, "PG5", GasPressureMean, GasPressure, "DarkOrange")
+plt.savefig(f"plots/{Today}_PG2_PG5", dpi=200)
+
+fig, axes = plt.subplots(2,2, figsize=(15, 8))
+ax1, ax2, ax3, ax4 = axes.flatten()
+PlotPressure(ax1, ax2, "PG8", GasPressureMean, GasPressure, "Teal")
+PlotPressure(ax3, ax4, "DF", GasPressureMean, GasPressure, "DarkOrange")
+plt.savefig(f"plots/{Today}_PG8_DF", dpi=200)
 
 # --------------------------------------------------
 # Plot the Vacuums
-fig, (ax1, ax2) = plt.subplots(1,2, figsize=(15, 8))
-PlotVacuum(ax1, "VG5", GasVacuumMean, GasVacuum, "Teal")
-PlotVacuum(ax2, "VG6", GasVacuumMean, GasVacuum, "DarkOrange")
+# fig, (ax1, ax2) = plt.subplots(1,2, figsize=(15, 8))
+# PlotVacuum(ax1, "VG5", GasVacuumMean, GasVacuum, "Teal")
+# PlotVacuum(ax2, "VG6", GasVacuumMean, GasVacuum, "DarkOrange")
+# plt.savefig(f"plots/{Today}_VG6_PG3", dpi=200)
 
 # --------------------------------------------------
 # Plot the HV
@@ -252,14 +273,17 @@ PlotVacuum(ax2, "VG6", GasVacuumMean, GasVacuum, "DarkOrange")
 # Plot the DICE Temps
 fig, (ax1,ax2) = plt.subplots(1,2, figsize=(15, 8))
 PlotDICE(ax1, ax2, DICE_TempsMean, "(ºC) T", "Temperature [Celcius]")
+plt.savefig(f"plots/{Today}_DICE_T", dpi=200)
 
 # Plot the DICE Voltages
 fig, (ax1,ax2) = plt.subplots(1,2, figsize=(15, 8))
 PlotDICE(ax1, ax2, DICE_TempsMean, "(V) V", "Voltage [Volts]")
+plt.savefig(f"plots/{Today}_DICE_V", dpi=200)
 
 # Plot the DICE Currents
 fig, (ax1,ax2) = plt.subplots(1,2, figsize=(15, 8))
 PlotDICE(ax1, ax2, DICE_TempsMean, "(A) I", "Current [A]")
+plt.savefig(f"plots/{Today}_DICE_I", dpi=200)
 
 # --------------------------------------------------
 # Plot the ratio to DICE0
@@ -275,6 +299,26 @@ plt.grid(True)
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.ylim(np.mean(Ratio)-0.1, np.mean(Ratio)+0.1)
+plt.savefig(f"plots/{Today}_PG3_DICE_T_Ratio", dpi=200)
+
+# --------------------------------------------------
+# Plot VG5 vs PG3 houry means shifted
+plt.figure(figsize=(10, 6))
+GasPressure_STD = GasPressure.resample('h').std()
+plt.plot(GasPressure_STD.index, (GasPressure_STD['PG3'] - np.median(GasPressure_STD['PG3'])) / max(GasPressure_STD['PG3'] - np.median(GasPressure_STD['PG3'])) , linestyle='-', color = "Teal", label = "PG3 hourly STD")
+plt.plot(GasPressure_STD.index, (GasPressure_STD['PG6'] - np.median(GasPressure_STD['PG6'])) / max(GasPressure_STD['PG6'] - np.median(GasPressure_STD['PG6'])) , linestyle='-', color = "Purple", label = "PG6 hourly STD")
+plt.plot(GasPressure_STD.index, (GasPressure_STD['PG8'] - np.median(GasPressure_STD['PG8'])) / max(GasPressure_STD['PG8'] - np.median(GasPressure_STD['PG8'])) , linestyle='-', color = "DarkRed", label = "PG8 hourly STD")
+plt.plot(GasPressure_STD.index, (GasPressure_STD['PG5'] - np.median(GasPressure_STD['PG5'])) / max(GasPressure_STD['PG5'] - np.median(GasPressure_STD['PG5'])) , linestyle='-', color = "DarkBlue", label = "PG5 hourly STD")
+
+# plt.plot(GasPressure.index, (GasPressure['PG3'] - np.median(GasPressure['PG3'])) / max(GasPressure['PG3'] - np.median(GasPressure['PG3'])), linestyle='-', color = "Teal", label = "PG3")
+# plt.plot(GasVacuumMean.index, (GasVacuumMean['VG5'] - np.median(GasVacuumMean['VG5']))/1.93e-8, linestyle='-', color = "DarkOrange", label = "VG5 hourly mean")
+plt.ylim(-5,5)
+plt.legend()
+plt.ylabel("Arb.")
+plt.xlabel("Date")
+plt.savefig(f"plots/{Today}_PressureSTD_vs_Vacuum_Shapes", dpi=200)
+
+
 
 plt.show()
 
