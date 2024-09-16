@@ -12,13 +12,15 @@ start=`date +%s`
 echo "Setting up IC"
 source /home/argon/Projects/Krishan/IC/setup_IC.sh
 
-mkdir -p /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/irene/13850/job${SLURM_ARRAY_TASK_ID}
-cd       /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/irene/13850/job${SLURM_ARRAY_TASK_ID}
+mkdir -p /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/irene/13850/
+cd       /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/irene/13850/
 
 
-input_file=$(sed -n "${SLURM_ARRAY_TASK_ID}p" home/argon/Projects/Krishan/DoubleBeta/Alphas/eventlists/run_13850_files.txt)
+input_file=$(sed -n "${SLURM_ARRAY_TASK_ID}p" /home/argon/Projects/Krishan/DoubleBeta/Alphas/eventlists/run_13850_files.txt)
+echo "Input File: $input_file"
 
-city irene /home/argon/Projects/Krishan/DoubleBeta/Alphas/config/irene.conf -i /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/raw/13850/$input_file -o run_13850_irene_${SLURM_ARRAY_TASK_ID}.h5
+
+city irene /home/argon/Projects/Krishan/DoubleBeta/Alphas/config/irene.conf -i $input_file -o run_13850_irene_${SLURM_ARRAY_TASK_ID}.h5
 
 
 ls -ltrh 
