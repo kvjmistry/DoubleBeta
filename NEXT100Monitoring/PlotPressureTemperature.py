@@ -189,7 +189,7 @@ DICE_files = '/Users/mistryk2/Desktop/Dice_Temps/'
 # DICE_files = fr'{path}\TP\Data\\'
 
 # Number of days to look back
-N_days = 6
+N_days = 30
 
 
 
