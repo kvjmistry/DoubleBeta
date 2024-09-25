@@ -122,6 +122,13 @@ with tb.open_file(filename) as file:
             print("Event Failed Quality Control...")
             continue
 
+        S1, _ = find_peaks(wfs_sum[ int(100/tc):int(985/tc)], height=200, distance=40/tc)
+        S2, _ = find_peaks(wfs_sum[ int(985/tc):int(1200/tc)], height=5000, distance=200/tc)
+
+        if (len(S1) !=1 or len(S2)!=1 ):
+            deltaT = 0
+        else:
+            deltaT = S2[0]*tc+985 - (S1[0]*tc+100)
 
         # Calcilate the noise of the PMT
         noise = []
@@ -134,7 +141,7 @@ with tb.open_file(filename) as file:
         cath_df = pd.concat(cath_df, ignore_index=True)
         cath_area = cath_df.pe_int.sum()
 
-        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, ts_raw=ts/1e3), index=[0]))
+        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, ts_raw=ts/1e3, deltaT=deltaT), index=[0]))
 
         df = get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim)
         data = data + df
