@@ -20,7 +20,7 @@ input_file=$(sed -n "${SLURM_ARRAY_TASK_ID}p" /home/argon/Projects/Krishan/Doubl
 echo "Input File: $input_file"
 
 
-python /home/argon/Projects/Krishan/DoubleBeta/Alphas/config/StudyRawWaveforms.py $input_file
+python /home/argon/Projects/Krishan/DoubleBeta/Alphas/notebooks/StudyRawWaveforms.py $input_file
 
 
 ls -ltrh 
