@@ -9,6 +9,29 @@ from pathlib  import Path
 import sys
 from datetime import datetime
 
+def sum_wf(wfs, event_number):
+    assert len(wfs.shape) == 3, "input must be 3-dimensional"
+
+    wfs   = wfs[event_number]
+
+    element_wise_sum = np.zeros_like(wfs[0],dtype=np.int64)
+
+    # Sum the arrays element-wise
+    for array in wfs:
+        element_wise_sum += array
+
+    return element_wise_sum
+
+def sum_wf(wfs):
+    element_wise_sum = np.zeros_like(wfs[0])
+
+    # Sum the arrays element-wise
+    for array in wfs:
+        element_wise_sum += array
+
+    return element_wise_sum
+
+
 def check_summed_baseline(wfs, grass_lim):
 
     flag=False
