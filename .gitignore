@@ -7,3 +7,5 @@ Bremsstrahlung/job/file_paths.txt
 GarfNexus/config/workdir/
 NEXT100Monitoring/plots/
 data/
+**.out**
+**.err**
