@@ -46,8 +46,8 @@ def check_summed_baseline(wfs, grass_lim):
 
     # 20 seems like a good number to check the difference against
     if (abs(baseline1-baseline2) > 20):
-        print("Error in baselines at start and end, dropping event")
-        print(baseline1-baseline2)
+        # print("Error in baselines at start and end, dropping event")
+        # print(baseline1-baseline2)
         flag = True
 
     # Look in the window for large peaks that could be other S2 pulses. 
@@ -110,6 +110,8 @@ with tb.open_file(filename) as file:
     tsel     = in_range(time, *grass_lim)
     for evt_no, wfs in enumerate(rwf):
 
+        print("On event: ", evt_no)
+
         _, ts = evt_info[evt_no]
         wfs = deconv(wfs)
         wfs_sum = sum_wf(wfs)
@@ -117,7 +119,7 @@ with tb.open_file(filename) as file:
         # Check if  event failed the quality control
         pass_flag = check_summed_baseline(wfs, grass_lim)
         if (pass_flag):
-            print("Skipping event...")
+            # print("Skipping event...")
             continue
 
 
@@ -142,6 +144,7 @@ with tb.open_file(filename) as file:
 
     data_properties = pd.concat(data_properties, ignore_index=True)
     data_properties = data_properties.assign(ts = np.array(list(map(datetime.fromtimestamp, data_properties.ts_raw))))
+
 
 with pd.HDFStore("/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filtered/13850/"+outfilename, mode='w', complevel=5, complib='zlib') as store:
     # Write each DataFrame to the file with a unique key
