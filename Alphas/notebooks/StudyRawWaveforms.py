@@ -110,7 +110,7 @@ with tb.open_file(filename) as file:
     tsel     = in_range(time, *grass_lim)
     for evt_no, wfs in enumerate(rwf):
 
-        print("On event: ", evt_no, " -> ", evt_info[evt_no])
+        print("On event: ", evt_no, " (", evt_info[evt_no][0], ")")
 
         _, ts = evt_info[evt_no]
         wfs = deconv(wfs)
