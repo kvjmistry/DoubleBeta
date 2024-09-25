@@ -82,7 +82,6 @@ data = []
 data_properties = []
 with tb.open_file(filename) as file:
     evt_info = file.root.Run.events
-    print(evt_info.evt_number.unique())
     rwf      = file.root.RD.pmtrwf
     time     = np.arange(rwf.shape[2]) * tc
     tsel     = in_range(time, *grass_lim)
