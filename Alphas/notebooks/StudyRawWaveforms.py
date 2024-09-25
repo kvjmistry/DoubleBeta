@@ -59,7 +59,7 @@ def get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_windo
 
 
 filename  = sys.argv[1]
-base_name = os.path.basename(file_path)  # Extracts 'run_13852_0000_ldc1_trg0.waveforms.h5'
+base_name = os.path.basename(filename)  # Extracts 'run_13852_0000_ldc1_trg0.waveforms.h5'
 outfilename = base_name.replace(".waveforms", "_filtered")
 
 grass_lim   = 1350, 1770 # time window in mus in which to search for single pes
