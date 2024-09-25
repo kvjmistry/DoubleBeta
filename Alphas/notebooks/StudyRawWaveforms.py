@@ -110,7 +110,7 @@ with tb.open_file(filename) as file:
     tsel     = in_range(time, *grass_lim)
     for evt_no, wfs in enumerate(rwf):
 
-        print("On event: ", evt_no)
+        print("On event: ", evt_no, " -> ", evt_info[evt_no])
 
         _, ts = evt_info[evt_no]
         wfs = deconv(wfs)
@@ -119,7 +119,7 @@ with tb.open_file(filename) as file:
         # Check if  event failed the quality control
         pass_flag = check_summed_baseline(wfs, grass_lim)
         if (pass_flag):
-            # print("Skipping event...")
+            print("Event Failed Quality Control...")
             continue
 
 
