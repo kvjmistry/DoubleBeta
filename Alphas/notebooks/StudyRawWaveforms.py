@@ -54,7 +54,7 @@ def check_summed_baseline(wfs, grass_lim):
     # This will mess up the reconstruction
     peaks, _ = find_peaks(wfs_sum[ int(grass_lim[0]/tc):int(grass_lim[1]/tc)], height=100, distance=40/tc)
 
-    if (len(peaks) > 1):
+    if (len(peaks) > 0):
         flag = True
 
     return flag
@@ -80,6 +80,18 @@ def get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_windo
     return df
 
 
+def CorrectRawBaseline(wfs):
+
+    corrected_waveforms = []
+
+    for wfm in wfs:
+        baseline1=np.mean(wfm[ int(1975/tc):int(2000/tc)])
+        baseline2=np.mean(wfm[0:int(25/tc)])
+        wfm = -1*(wfm-baseline2)
+        corrected_waveforms.append(wfm)
+
+    return np.array(corrected_waveforms)
+
 
 filename  = sys.argv[1]
 base_name = os.path.basename(filename)  # Extracts 'run_13852_0000_ldc1_trg0.waveforms.h5'
@@ -95,6 +107,8 @@ half_window = 4 # number of samples to each side of a peak maximum to integrate
 n_dark      = 10 # max number of samples without pe
 tc          = 25e-3 # constant to convert from samples to time or vice versa. 
 noise_sigma = 4 # how many STD above noise for the single PEs to be
+
+useRaw = True
 
 wf_sum = 0
 
@@ -113,7 +127,12 @@ with tb.open_file(filename) as file:
         print("On event: ", evt_no, " (", evt_info[evt_no][0], ")")
 
         _, ts = evt_info[evt_no]
-        wfs = deconv(wfs)
+        
+        if ( useRaw):
+            wfs = CorrectRawBaseline(wfs)
+        else:
+            wfs = deconv(wfs)
+        
         wfs_sum = sum_wf(wfs)
 
         # Check if  event failed the quality control
@@ -136,7 +155,10 @@ with tb.open_file(filename) as file:
             noise.append(noise_sigma*np.std(wf[int(noise_lim[0]/tc):int(noise_lim[1]/tc)]))
 
 
-        S2_area  = wfs_sum[int(997/tc):int(1030/tc)].sum()
+        # Sum values in the peak up to the point where the pulse goes to zero
+        S2_area = wfs_sum[int(990/tc):int(1030/tc)]
+        S2_area = S2_area[S2_area > 0].sum()
+
         cath_df = get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, [1770,1830])
         cath_df = pd.concat(cath_df, ignore_index=True)
         cath_area = cath_df.pe_int.sum()
