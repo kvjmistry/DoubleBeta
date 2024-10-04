@@ -5,7 +5,7 @@ import pandas as pd
 
 # Now load in the stack 
 directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filtered/13850/"
-outfile=f"Run_13850_Filtered.h5"
+outfile=f"Run_13850_FilteredRaw.h5"
  
 file_paths = glob.glob(os.path.join(directory_path, '*.h5'))
 print(len(file_paths))
