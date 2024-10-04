@@ -93,6 +93,25 @@ def CorrectRawBaseline(wfs):
     return np.array(corrected_waveforms)
 
 
+def find_fwhm(time, amplitude):
+    max_amplitude = np.max(amplitude)
+    half_max = max_amplitude / 2
+
+    # Find indices where amplitude crosses half-maximum level
+    above_half_max = np.where(amplitude >= half_max)[0]
+
+    # First crossing point
+    left_idx = above_half_max[0]
+    right_idx = above_half_max[-1]
+
+    # Interpolate to get more accurate crossing times
+    t_left = np.interp(half_max, [amplitude[left_idx-1], amplitude[left_idx]], [time[left_idx-1], time[left_idx]])
+    t_right = np.interp(half_max, [amplitude[right_idx], amplitude[right_idx+1]], [time[right_idx], time[right_idx+1]])
+
+    fwhm = t_right - t_left
+    return fwhm
+
+
 filename  = sys.argv[1]
 base_name = os.path.basename(filename)  # Extracts 'run_13852_0000_ldc1_trg0.waveforms.h5'
 outfilename = base_name.replace(".waveforms", "_filtered")
@@ -135,6 +154,8 @@ with tb.open_file(filename) as file:
         
         wfs_sum = sum_wf(wfs)
 
+        times   = np.arange(wfs_sum .size) * 25e-3 # sampling period in mus
+
         # Check if  event failed the quality control
         pass_flag = check_summed_baseline(wfs, grass_lim)
         if (pass_flag):
@@ -163,7 +184,9 @@ with tb.open_file(filename) as file:
         cath_df = pd.concat(cath_df, ignore_index=True)
         cath_area = cath_df.pe_int.sum()
 
-        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, ts_raw=ts/1e3, deltaT=deltaT), index=[0]))
+        FWHM = find_fwhm(times[int(990/tc):int(1030/tc)], wfs_sum[int(990/tc):int(1030/tc)])
+
+        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355), index=[0]))
 
         df = get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim)
         data = data + df
