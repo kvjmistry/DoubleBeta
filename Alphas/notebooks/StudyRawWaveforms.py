@@ -181,7 +181,7 @@ with tb.open_file(filename) as file:
         # Convert the ADC to PE
         wfs = ADC_to_PE(wfs, datapmt)
 
-        wfs[16] = np.arange(wf_pmt[16] .size) * 0
+        wfs[16] = np.arange(wfs[16] .size) * 0
         
         wfs_sum = sum_wf(wfs)
 
