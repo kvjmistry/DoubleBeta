@@ -33,7 +33,7 @@ def sum_wf(wfs):
     return element_wise_sum
 
 
-def check_summed_baseline(wfs_sum, grass_lim):
+def check_summed_baseline(wfs_sum, grass_lim, scale_factor):
 
     flag=False
     tc=25e-3
@@ -44,14 +44,14 @@ def check_summed_baseline(wfs_sum, grass_lim):
     baseline2=np.mean(wfs_sum[0:int(25/tc)])
 
     # 20 seems like a good number to check the difference against
-    if (abs(baseline1-baseline2) > 20):
-        # print("Error in baselines at start and end, dropping event")
-        # print(baseline1-baseline2)
+    if (abs(baseline1-baseline2) > 20*scale_factor):
+        print("Error in baselines at start and end, dropping event")
+        print(baseline1-baseline2)
         flag = True
 
     # Look in the window for large peaks that could be other S2 pulses. 
     # This will mess up the reconstruction
-    peaks, _ = find_peaks(wfs_sum[ int(grass_lim[0]/tc):int(grass_lim[1]/tc)], height=100, distance=40/tc)
+    peaks, _ = find_peaks(wfs_sum[ int(grass_lim[0]/tc):int(grass_lim[1]/tc)], height=100*scale_factor, distance=40/tc)
 
     if (len(peaks) > 0):
         flag = True
