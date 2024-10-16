@@ -118,6 +118,14 @@ def ADC_to_PE(wfs, datapmt):
 
     return wfs
 
+def find_highest_sipm(wfs, event_number):
+    assert len(wfs.shape) == 3, "input must be 3-dimensional"
+
+    wfs   = wfs[event_number]
+    index = np.argmax(np.max(wfs, axis=1))
+    print(index)
+    return index
+
 
 filename  = sys.argv[1]
 RUN_NUMBER= int(sys.argv[2])
