@@ -1,5 +1,6 @@
 from invisible_cities.cities.components import deconv_pmt
 from invisible_cities.core.core_functions import in_range
+from invisible_cities.database  import load_db
 import pandas as pd
 import numpy as np
 import tables as tb
@@ -32,12 +33,10 @@ def sum_wf(wfs):
     return element_wise_sum
 
 
-def check_summed_baseline(wfs, grass_lim):
+def check_summed_baseline(wfs_sum, grass_lim):
 
     flag=False
     tc=25e-3
-    
-    wfs_sum = sum_wf(wfs)
     
     # Check the baseline at the end and start match
     # otherwise there could be signal there so the baseline is all messed up
@@ -111,8 +110,17 @@ def find_fwhm(time, amplitude):
     fwhm = t_right - t_left
     return fwhm, max_amplitude
 
+def ADC_to_PE(wfs, datapmt):
+    conv_factors = datapmt.adc_to_pes.to_numpy()
+
+    for w in range(0, len(wfs)):
+        wfs[w] = wfs[w]*conv_factors[w]
+
+    return wfs
+
 
 filename  = sys.argv[1]
+RUN_NUMBER= int(sys.argv[2])
 base_name = os.path.basename(filename)  # Extracts 'run_13852_0000_ldc1_trg0.waveforms.h5'
 outfilename = base_name.replace(".waveforms", "_filtered")
 
@@ -126,13 +134,19 @@ half_window = 4 # number of samples to each side of a peak maximum to integrate
 n_dark      = 10 # max number of samples without pe
 tc          = 25e-3 # constant to convert from samples to time or vice versa. 
 noise_sigma = 4 # how many STD above noise for the single PEs to be
+scale_factor = 40*60 # Scale factor for summed waveform. 60 Pmts, 40 is ~ the conversion factor
 
 useRaw = True
 
 wf_sum = 0
 
 
-deconv = deconv_pmt("next100", 13850, 62400)
+deconv = deconv_pmt("next100", RUN_NUMBER, 62400)
+
+# Load in the database for SiPMs
+detector_db = "next100"
+datasipm = load_db.DataSiPM(detector_db, RUN_NUMBER)
+datapmt = load_db.DataPMT(detector_db, RUN_NUMBER)
 
 data = []
 data_properties = []
@@ -145,25 +159,34 @@ with tb.open_file(filename) as file:
 
         print("On event: ", evt_no, " (", evt_info[evt_no][0], ")")
 
+        highest_sipm = find_highest_sipm(file.root.RD.sipmrwf, evt_no)
+        x_pos = datasipm.iloc[highest_sipm].X
+        y_pos = datasipm.iloc[highest_sipm].Y
+
         _, ts = evt_info[evt_no]
         
         if ( useRaw):
             wfs = CorrectRawBaseline(wfs)
         else:
             wfs = deconv(wfs)
+
+        # Convert the ADC to PE
+        wfs = ADC_to_PE(wfs, datapmt)
+
+        wfs[16] = np.arange(wf_pmt[16] .size) * 0
         
         wfs_sum = sum_wf(wfs)
 
         times   = np.arange(wfs_sum .size) * 25e-3 # sampling period in mus
 
         # Check if  event failed the quality control
-        pass_flag = check_summed_baseline(wfs, grass_lim)
+        pass_flag = check_summed_baseline(wfs, grass_lim, scale_factor)
         if (pass_flag):
             print("Event Failed Quality Control...")
             continue
 
-        S1, _ = find_peaks(wfs_sum[ int(100/tc):int(985/tc)], height=200, distance=40/tc)
-        S2, _ = find_peaks(wfs_sum[ int(985/tc):int(1200/tc)], height=5000, distance=200/tc)
+        S1, _ = find_peaks(wfs_sum[ int(100/tc):int(985/tc)], height=200*scale_factor, distance=40/tc)
+        S2, _ = find_peaks(wfs_sum[ int(985/tc):int(1200/tc)], height=5000*scale_factor, distance=200/tc)
 
         if (len(S1) !=1 or len(S2)!=1 ):
             deltaT = 0
@@ -186,7 +209,7 @@ with tb.open_file(filename) as file:
 
         FWHM, S2_amplitude = find_fwhm(times[int(990/tc):int(1030/tc)], wfs_sum[int(990/tc):int(1030/tc)])
 
-        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude), index=[0]))
+        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos), index=[0]))
 
         df = get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim)
         data = data + df
@@ -198,7 +221,7 @@ with tb.open_file(filename) as file:
     data_properties = data_properties.assign(ts = np.array(list(map(datetime.fromtimestamp, data_properties.ts_raw))))
 
 
-with pd.HDFStore("/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filtered/13850/"+outfilename, mode='w', complevel=5, complib='zlib') as store:
+with pd.HDFStore(f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filtered/{RUN_NUMBER}/"+outfilename, mode='w', complevel=5, complib='zlib') as store:
     # Write each DataFrame to the file with a unique key
     store.put('data', data, format='table')
     store.put('data_properties', data_properties, format='table')
