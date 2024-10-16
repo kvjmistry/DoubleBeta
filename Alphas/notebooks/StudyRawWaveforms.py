@@ -51,12 +51,9 @@ def check_summed_baseline(wfs_sum, grass_lim, scale_factor):
 
     # Look in the window for large peaks that could be other S2 pulses. 
     # This will mess up the reconstruction
-    peaks, _ = find_peaks(wfs_sum[ int(grass_lim[0]/tc):int(grass_lim[1]/tc)], height=100*scale_factor, distance=40/tc)
+    peaks, _ = find_peaks(wfs_sum[ int(grass_lim[0]/tc):int(grass_lim[1]/tc)], height=8000, distance=40/tc)
 
-    if (len(peaks) > 0):
-        flag = True
-
-    return flag
+    return flag, peaks
 
 def get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim):
 
@@ -188,16 +185,16 @@ with tb.open_file(filename) as file:
         times   = np.arange(wfs_sum .size) * 25e-3 # sampling period in mus
 
         # Check if  event failed the quality control
-        pass_flag = check_summed_baseline(wfs_sum, grass_lim, scale_factor)
+        pass_flag, grass_peaks = check_summed_baseline(wfs_sum, grass_lim, scale_factor)
         if (pass_flag):
             print("Event Failed Quality Control...")
             continue
 
-        S1, _ = find_peaks(wfs_sum[ int(100/tc):int(985/tc)], height=200*scale_factor, distance=40/tc)
-        S2, _ = find_peaks(wfs_sum[ int(985/tc):int(1200/tc)], height=5000*scale_factor, distance=200/tc)
+        S1, _ = find_peaks(wfs_sum[ int(100/tc):int(985/tc)], height=10000, distance=40/tc)
+        S2, _ = find_peaks(wfs_sum[ int(985/tc):int(1200/tc)], height=200000, distance=200/tc)
 
         if (len(S1) !=1 or len(S2)!=1 ):
-            deltaT = 0
+            deltaT = -999
         else:
             deltaT = S2[0]*tc+985 - (S1[0]*tc+100)
 
@@ -211,13 +208,13 @@ with tb.open_file(filename) as file:
         S2_area = wfs_sum[int(990/tc):int(1030/tc)]
         S2_area = S2_area[S2_area > 0].sum()
 
-        cath_df = get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, [1770,1830])
+        cath_df = get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, [1780,1850])
         cath_df = pd.concat(cath_df, ignore_index=True)
         cath_area = cath_df.pe_int.sum()
 
         FWHM, S2_amplitude = find_fwhm(times[int(990/tc):int(1030/tc)], wfs_sum[int(990/tc):int(1030/tc)])
 
-        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos), index=[0]))
+        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos, grass_peaks = len(grass_peaks), nS1 = len(S1)), index=[0]))
 
         df = get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim)
         data = data + df
@@ -228,6 +225,7 @@ with tb.open_file(filename) as file:
     data_properties = pd.concat(data_properties, ignore_index=True)
     data_properties = data_properties.assign(ts = np.array(list(map(datetime.fromtimestamp, data_properties.ts_raw))))
 
+print(data_properties)
 
 with pd.HDFStore(f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filtered/{RUN_NUMBER}/"+outfilename, mode='w', complevel=5, complib='zlib') as store:
     # Write each DataFrame to the file with a unique key

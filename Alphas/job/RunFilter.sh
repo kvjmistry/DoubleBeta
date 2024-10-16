@@ -25,8 +25,6 @@ echo "Input File: $input_file"
 python /home/argon/Projects/Krishan/DoubleBeta/Alphas/notebooks/StudyRawWaveforms.py $input_file ${RUN_NUMBER}
 
 
-ls -ltrh 
-
 echo "FINISHED....EXITING"
 
 end=`date +%s`
