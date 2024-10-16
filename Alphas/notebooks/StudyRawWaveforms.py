@@ -188,7 +188,7 @@ with tb.open_file(filename) as file:
         times   = np.arange(wfs_sum .size) * 25e-3 # sampling period in mus
 
         # Check if  event failed the quality control
-        pass_flag = check_summed_baseline(wfs, grass_lim, scale_factor)
+        pass_flag = check_summed_baseline(wfs_sum, grass_lim, scale_factor)
         if (pass_flag):
             print("Event Failed Quality Control...")
             continue
