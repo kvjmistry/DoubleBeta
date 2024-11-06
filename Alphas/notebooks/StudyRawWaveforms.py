@@ -143,7 +143,24 @@ scale_factor = 40*60 # Scale factor for summed waveform. 60 Pmts, 40 is ~ the co
 
 useRaw = True
 
+
+if (useRaw):
+    S1_height = 10000
+    S2_height = 200000
+    S2_window = 1030
+else:
+    S1_height = 10000
+    S2_height = 50000
+    S2_window = 1040
+
 wf_sum = 0
+
+if (RUN_NUMBER == 13850):
+    Cath_start = 1793
+    Cath_end   = 1810
+else:
+    Cath_start = 1796
+    Cath_end   = 1812
 
 
 deconv = deconv_pmt("next100", RUN_NUMBER, 62400)
@@ -190,8 +207,8 @@ with tb.open_file(filename) as file:
             print("Event Failed Quality Control...")
             continue
 
-        S1, _ = find_peaks(wfs_sum[ int(100/tc):int(985/tc)], height=10000, distance=40/tc)
-        S2, _ = find_peaks(wfs_sum[ int(985/tc):int(1200/tc)], height=200000, distance=200/tc)
+        S1, _ = find_peaks(wfs_sum[ int(100/tc):int(985/tc)], height=S1_height, distance=40/tc)
+        S2, _ = find_peaks(wfs_sum[ int(985/tc):int(1200/tc)], height=S2_height, distance=200/tc)
 
         if (len(S1) !=1 or len(S2)!=1 ):
             deltaT = -999
@@ -205,14 +222,14 @@ with tb.open_file(filename) as file:
 
 
         # Sum values in the peak up to the point where the pulse goes to zero
-        S2_area = wfs_sum[int(990/tc):int(1030/tc)]
+        S2_area = wfs_sum[int(990/tc):int(S2_window/tc)]
         S2_area = S2_area[S2_area > 0].sum()
 
-        cath_df = get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, [1780,1850])
+        cath_df = get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, [Cath_start,Cath_end])
         cath_df = pd.concat(cath_df, ignore_index=True)
         cath_area = cath_df.pe_int.sum()
 
-        FWHM, S2_amplitude = find_fwhm(times[int(990/tc):int(1030/tc)], wfs_sum[int(990/tc):int(1030/tc)])
+        FWHM, S2_amplitude = find_fwhm(times[int(990/tc):int(S2_window/tc)], wfs_sum[int(990/tc):int(S2_window/tc)])
 
         data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos, grass_peaks = len(grass_peaks), nS1 = len(S1)), index=[0]))
 
