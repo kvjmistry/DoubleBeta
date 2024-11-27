@@ -242,6 +242,7 @@ data_properties = []
 with tb.open_file(filename) as file:
     evt_info = file.root.Run.events
     rwf      = file.root.RD.pmtrwf
+    time     = np.arange(rwf.shape[2]) * tc
     tsel     = in_range(time, *grass_lim)
     for evt_no, wfs in enumerate(rwf):
 
