@@ -63,10 +63,11 @@ def check_summed_baseline(wfs_sum, grass_lim, scale_factor):
 
     return flag, peaks_filt
 
-def get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim):
+def get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim):
 
     df = []
 
+    tsel_     = in_range(times, *grass_lim)
     wfs = wfs[:, tsel]
 
     for pmt_no, wf in enumerate(wfs):
@@ -201,8 +202,7 @@ if (RUN_NUMBER == 13850):
     S2_height   = 50000
     S2_start    = 990        # S2 integration window start
     S2_end      = 1040       # S2 integration window end
-    Cath_start  = 1793       # start window for cathode events
-    Cath_end    = 1810       # end window for cathode events
+    cath_lim    = 1785, 1860 # start/end window for cathode events
     S1_window   = 100, 985   # window to search for S1
     S2_window   = 985, 1200  # window to search for S2
 
@@ -213,8 +213,7 @@ elif (RUN_NUMBER == 14180):
     S2_height   = 50000
     S2_start    = 990
     S2_end      = 1040
-    Cath_start  = 1796
-    Cath_end    = 1812
+    cath_lim    = 1785, 1860
     S1_window   = 100, 985
     S2_window   = 985, 1200 
 else:
@@ -224,8 +223,7 @@ else:
     S2_height   = 50000
     S2_start    = 990
     S2_end      = 1040
-    Cath_start  = 1796
-    Cath_end    = 1812
+    cath_lim    = 1785, 1860
     S1_window   = 100, 985
     S2_window   = 985, 1200 
 
@@ -300,7 +298,7 @@ with tb.open_file(filename) as file:
         S2_area = wfs_sum[int(S2_start/tc):int(S2_end/tc)]
         S2_area = S2_area[S2_area > 0].sum()
 
-        cath_df = get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, [Cath_start,Cath_end])
+        cath_df = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, [Cath_start,Cath_end])
         cath_df = pd.concat(cath_df, ignore_index=True)
         cath_area = cath_df.pe_int.sum()
 
@@ -312,7 +310,7 @@ with tb.open_file(filename) as file:
         # then the deconvolution likely failed, so skip grass calculation
         min_baseline = min(wfs_sum_cor[int((grass_lim[0]-50)/tc):int((grass_lim[0]+100)/tc)])
         if (min_baseline > -1500):
-            df = get_PEs_inWindow(wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim)
+            df = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim)
             data = data + df
 
         else:
