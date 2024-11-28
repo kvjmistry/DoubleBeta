@@ -298,7 +298,7 @@ with tb.open_file(filename) as file:
         S2_area = wfs_sum[int(S2_start/tc):int(S2_end/tc)]
         S2_area = S2_area[S2_area > 0].sum()
 
-        cath_df = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, [Cath_start,Cath_end])
+        cath_df = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, cath_lim)
         cath_df = pd.concat(cath_df, ignore_index=True)
         cath_area = cath_df.pe_int.sum()
 
