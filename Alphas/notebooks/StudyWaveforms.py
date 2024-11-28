@@ -301,10 +301,12 @@ with tb.open_file(filename) as file:
         cath_df = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, cath_lim)
         cath_df = pd.concat(cath_df, ignore_index=True)
         cath_area = cath_df.pe_int.sum()
+        cath_time = cath_df.peak_time.mean()
+        cath_std = cath_df.peak_time.std()
 
         FWHM, S2_amplitude = find_fwhm(times[int(S2_start/tc):int(S2_end/tc)], wfs_sum[int(S2_start/tc):int(S2_end/tc)])
 
-        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos, grass_peaks = len(grass_peaks), nS1 = len(S1)), index=[0]))
+        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, cath_time=cath_time, cath_std=cath_std, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos, grass_peaks = len(grass_peaks), nS1 = len(S1)), index=[0]))
 
         # Check the baseline, if we got something really negative
         # then the deconvolution likely failed, so skip grass calculation
