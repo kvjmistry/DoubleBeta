@@ -68,7 +68,7 @@ def get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, hal
     df = []
 
     tsel_     = in_range(times, *grass_lim)
-    wfs = wfs[:, tsel]
+    wfs = wfs[:, tsel_]
 
     for pmt_no, wf in enumerate(wfs):
 
