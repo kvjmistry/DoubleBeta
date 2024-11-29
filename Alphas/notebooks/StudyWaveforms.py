@@ -54,7 +54,7 @@ def check_summed_baseline(wfs_sum, grass_lim, scale_factor):
 
     # Look in the window for large peaks that could be other S2 pulses. 
     # This will mess up the reconstruction
-    peaks, _ = find_peaks(wfs_sum[ int(grass_lim[0]/tc):int(grass_lim[1]/tc)], height=8000, distance=4/tc)
+    peaks, _ = find_peaks(wfs_sum[ int(grass_lim[0]/tc):int(grass_lim[1]/tc)], height=2000, distance=30/tc)
 
     peaks_filt = np.array([
         p for p in peaks
@@ -241,7 +241,7 @@ with tb.open_file(filename) as file:
     evt_info = file.root.Run.events
     rwf      = file.root.RD.pmtrwf
     time     = np.arange(rwf.shape[2]) * tc
-    tsel     = in_range(time, *grass_lim)
+    # tsel     = in_range(time, *grass_lim)
     for evt_no, wfs in enumerate(rwf):
 
         print("On event: ", evt_no, " (", evt_info[evt_no][0], ")")
@@ -311,12 +311,12 @@ with tb.open_file(filename) as file:
         # Check the baseline, if we got something really negative
         # then the deconvolution likely failed, so skip grass calculation
         min_baseline = min(wfs_sum_cor[int((grass_lim[0]-50)/tc):int((grass_lim[0]+100)/tc)])
-        if (min_baseline > -1500):
+        if (min_baseline > -2000):
             df = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim)
             data = data + df
 
         else:
-            print("Problem with deconvolution")
+            print("Problem with deconvolution", min_baseline)
 
     data = pd.concat(data, ignore_index=True)
     data = data.assign(ts = np.array(list(map(datetime.fromtimestamp, data.ts_raw))))
