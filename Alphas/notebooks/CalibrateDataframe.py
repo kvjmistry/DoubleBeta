@@ -21,8 +21,11 @@ RUN_NUMBER= int(sys.argv[2])
 base_name = os.path.basename(filename)  # Extracts 'run_13852_0000_ldc1_trg0.waveforms.h5'
 outfilename = base_name.replace("_filtered", "_filteredC")
 
+print("RUN is", RUN_NUMBER, " file is", base_name)
+
 data = pd.read_hdf(filename, "data")
 
+trig_time = 1000
 if (RUN_NUMBER =="14180"):
     mean_lt = 52000.0 # mus
     trig_time = 1000
