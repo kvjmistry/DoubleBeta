@@ -23,7 +23,7 @@ outfilename = base_name.replace("_filtered", "_filteredC")
 
 data = pd.read_hdf(filename, "data")
 
-if (RUN =="14180"):
+if (RUN_NUMBER =="14180"):
     mean_lt = 52000.0 # mus
     trig_time = 1000
 
