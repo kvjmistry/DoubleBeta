@@ -9,7 +9,7 @@ RUN_NUMBER=14180
 mode="filt"
 
 if mode == "filt":
-
+    print("Combining Data Properties")
     directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filtered/{RUN_NUMBER}/"
     outfile=f"Run_{RUN_NUMBER}_Filtered.h5"
     
@@ -31,6 +31,7 @@ if mode == "filt":
         store.put('data_properties',data_properties, format='table')
 
 else:
+    print("Combining Data Table")
     directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"
     outfile=f"Run_{RUN_NUMBER}_FilteredC.h5"
     
@@ -43,6 +44,8 @@ else:
         data.append(pd.read_hdf(file_path, key = 'data'))
 
     data = pd.concat(data)
+
+    data = data[["event", "pmt", "pe_int", "peak_time", "pe_intC"]]
 
     print(data)
 
