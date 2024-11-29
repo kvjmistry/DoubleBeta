@@ -35,6 +35,7 @@ if (RUN_NUMBER =="14180"):
 data['peak_time'] = data['peak_time'] - trig_time # Need to correct to get the right drift time
 data["pe_intC"]   = data.apply(lambda row: CorrectLifetimeAvg(row, "pe_int", "peak_time",  mean_lt), axis=1)
 
+print(data)
 
 with pd.HDFStore(f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"+outfilename, mode='w', complevel=5, complib='zlib') as store:
     # Write each DataFrame to the file with a unique key
