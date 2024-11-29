@@ -26,6 +26,7 @@ print("RUN is", RUN_NUMBER, " file is", base_name)
 data = pd.read_hdf(filename, "data")
 
 trig_time = 1000
+mean_lt = 52000.0
 if (RUN_NUMBER =="14180"):
     mean_lt = 52000.0 # mus
     trig_time = 1000
