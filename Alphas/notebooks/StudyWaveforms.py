@@ -11,6 +11,7 @@ import sys
 from datetime import datetime
 from scipy.signal import savgol_filter
 from scipy.interpolate import interp1d
+from scipy.optimize import curve_fit
 
 def sum_wf(wfs, event_number):
     assert len(wfs.shape) == 3, "input must be 3-dimensional"
@@ -79,7 +80,7 @@ def get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, hal
 
         for sl in idx_slices:
             m = np.argmax(wf[sl]) + sl[0]
-            pe_int = wf[m-half_window:m+half_window].sum()
+            pe_int = wf[m-half_window:m+half_window].sum()*tc
             df.append(pd.DataFrame(dict(event = evt_info[evt_no][0], ts_raw=ts/1e3, pmt=pmt_no, pe_int=pe_int, peak_time=m*tc+grass_lim[0], noise_thr=noise[pmt_no]), index=[0]))
 
     return df
@@ -176,6 +177,28 @@ def CorrectDeconvBaseline(t_pmt, tmin, tmax, interps, wfs):
     return wfs
 
 
+# Fit the distribution 
+def Gaussian(x, A, mu, sigma):
+    return A * np.exp(-(x-mu)*(x-mu)/(2*sigma*sigma))
+
+def FitS2(time, amplitude):
+    max_amplitude = np.max(amplitude)
+    half_max = max_amplitude / 2
+
+    # Find indices where amplitude crosses half-maximum level
+    above_half_max = np.where(amplitude >= half_max)[0]
+
+    time_slice = time[above_half_max]
+
+    # Perform the curve fit
+    params, covariance = curve_fit(Gaussian, time[above_half_max], amplitude[above_half_max], bounds = ([1e3, min(time_slice),1], [8.5e8, max(time_slice),50]))
+
+    # Extract the fitted parameters
+    A, mu, sigma = params
+
+    return A, mu, sigma
+
+
 filename  = sys.argv[1]
 RUN_NUMBER= int(sys.argv[2])
 base_name = os.path.basename(filename)  # Extracts 'run_13852_0000_ldc1_trg0.waveforms.h5'
@@ -216,6 +239,18 @@ elif (RUN_NUMBER == 14180):
     cath_lim    = 1785, 1860
     S1_window   = 100, 985
     S2_window   = 985, 1200 
+
+elif (RUN_NUMBER == 14498):
+    grass_lim   = 1650, 2350
+    noise_lim   = 2500, 2600
+    S1_height   = 20000
+    S2_height   = 50000
+    S2_start    = 1590
+    S2_end      = 1640
+    cath_lim    = 2500, 2550 
+    S1_window   = 100, 1585
+    S2_window   = 1585, 1800 
+
 else:
     grass_lim   = 1050, 1770 
     noise_lim   = 1900, 2000 
@@ -296,17 +331,21 @@ with tb.open_file(filename) as file:
 
         # Sum values in the peak up to the point where the pulse goes to zero
         S2_area = wfs_sum[int(S2_start/tc):int(S2_end/tc)]
-        S2_area = S2_area[S2_area > 0].sum()
+        S2_area = S2_area[S2_area > 0].sum()*tc
 
         cath_df = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, cath_lim)
         cath_df = pd.concat(cath_df, ignore_index=True)
-        cath_area = cath_df.pe_int.sum()
+        cath_area = cath_df.pe_int.sum()*tc
         cath_time = cath_df.peak_time.mean()
         cath_std = cath_df.peak_time.std()
 
         FWHM, S2_amplitude = find_fwhm(times[int(S2_start/tc):int(S2_end/tc)], wfs_sum[int(S2_start/tc):int(S2_end/tc)])
 
-        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area,cath_area=cath_area, cath_time=cath_time, cath_std=cath_std, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos, grass_peaks = len(grass_peaks), nS1 = len(S1)), index=[0]))
+        # Also try fitting
+        A, mu, sigma = FitS2(times[int(S2_start/tc):int(S2_end/tc)], wfs_sum[int(S2_start/tc):int(S2_end/tc)])
+        area = A * sigma * np.sqrt(2 * np.pi)
+
+        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area, S2_areafit=area, S2_time = mu, cath_area=cath_area, cath_time=cath_time, cath_std=cath_std, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos, grass_peaks = len(grass_peaks), nS1 = len(S1)), index=[0]))
 
         # Check the baseline, if we got something really negative
         # then the deconvolution likely failed, so skip grass calculation
