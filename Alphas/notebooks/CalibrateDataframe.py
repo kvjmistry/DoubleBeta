@@ -21,6 +21,7 @@ filename  = sys.argv[1]
 RUN_NUMBER= int(sys.argv[2])
 base_name = os.path.basename(filename)  # Extracts 'run_13852_0000_ldc1_trg0.waveforms.h5'
 outfilename = base_name.replace("_filtered", "_filteredC")
+outfilenamepkl = base_name.replace("_filtered.h5", "_pickle.pkl")
 
 print("RUN is", RUN_NUMBER, " file is", base_name)
 
@@ -102,7 +103,7 @@ for index, evt in enumerate(data.event.unique()):
 histogram_df = pd.DataFrame({"event":events,"S2_areas":S2_areas,"tail_energy": tail_energy} )
 print(histogram_df)
 
-with open(f"histogram_info_Run_{RUN_NUMBER}.pkl", 'wb') as pickle_file:
+with open(f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"+outfilenamepkl, 'wb') as pickle_file:
     pickle.dump(histogram_df, pickle_file)
     pickle.dump(total_hist, pickle_file)
 
