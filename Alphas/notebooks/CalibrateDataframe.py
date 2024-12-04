@@ -4,6 +4,7 @@ import tables as tb
 import os
 import sys
 import glob
+import pickle
 
 
 def CorrectLifetimeAvg(row, var, t, mean_lt):
@@ -25,20 +26,86 @@ print("RUN is", RUN_NUMBER, " file is", base_name)
 
 data = pd.read_hdf(filename, "data")
 
-trig_time = 1000
-mean_lt = 43000.0
+
 if (RUN_NUMBER == 14180):
     mean_lt = 43000.0 # mus
     trig_time = 1009
+    cathode_time = 803
+    PE_to_MeV = 4.092602958598264e-07
+    max_lifetime = 100e3
 elif (RUN_NUMBER == 14498):
     mean_lt = 45000.0 # mus
     trig_time = 1610
+    cathode_time = 1500
+    PE_to_MeV = 3.11932730810256e-07
+    max_lifetime = 100e3
+else:
+    print("Error run config is not set")
 
 data['peak_time'] = data['peak_time'] - trig_time # Need to correct to get the right drift time
 data["pe_intC"]   = data.apply(lambda row: CorrectLifetimeAvg(row, "pe_int", "peak_time",  mean_lt), axis=1)
 
+# Convert from PE to eV
+data["pe_intC"] = data["pe_intC"]*PE_to_MeV*1e6
+
 print(data)
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+
+# Load the data
+data_properties_lt = pd.read_hdf(f"/home/argon/Projects/Krishan/DoubleBeta/Alphas/CalibratedProperties/Properties_Run_{RUN_NUMBER}.h5", "data_properties_lt")
+
+bins = np.arange(40, 770, 50)
+bin_centers = (bins[:-1] + bins[1:]) / 2
+
+total_hist = None
+
+tail_energy = []
+S2_areas = []
+events = []
+
+for index, evt in enumerate(data.event.unique()):
+
+    print(f"Event: {index}")
+
+    S2_pulse = data_properties_lt[data_properties_lt['event'] == evt]
+
+    S2_area = S2_pulse.S2_areaC.item()
+    grass_peaks = S2_pulse.grass_peaks.item()
+    event = data[data.event == evt]
+
+    if (S2_area < 0.5):
+        continue
+
+    if (grass_peaks >0):
+        continue
+
+    counts, edges = np.histogram(event.peak_time, weights=event.pe_intC/S2_area, bins = bins )
+
+    hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, 50])
+    
+    # masked_hist=hist2D
+
+    if total_hist is None:
+        total_hist = hist2D
+    else:
+        total_hist += hist2D
+
+    tail_energy.append(event.pe_intC.sum())
+    S2_areas.append(S2_area)
+    events.append(evt)
+
+
+histogram_df = pd.Dataframe("event":events,"S2_areas":S2_areas,"tail_energy": tail_energy )
+display(histogram_df)
+
+with open(f"histogram_info_Run_{RUN_NUMBER}.pkl", 'wb') as pickle_file:
+    pickle.dump(histogram_df, pickle_file)
+    pickle.dump(total_hist, pickle_file)
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
 
 with pd.HDFStore(f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"+outfilename, mode='w', complevel=5, complib='zlib') as store:
     # Write each DataFrame to the file with a unique key
+    store.put("data_properties", data_properties_lt, format='table')
     store.put('data', data, format='table')
