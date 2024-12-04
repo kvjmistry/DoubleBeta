@@ -28,10 +28,10 @@ data = pd.read_hdf(filename, "data")
 trig_time = 1000
 mean_lt = 43000.0
 if (RUN_NUMBER == 14180):
-    mean_lt = 52000.0 # mus
+    mean_lt = 43000.0 # mus
     trig_time = 1009
 elif (RUN_NUMBER == 14498):
-    mean_lt = 47000.0 # mus
+    mean_lt = 45000.0 # mus
     trig_time = 1610
 
 data['peak_time'] = data['peak_time'] - trig_time # Need to correct to get the right drift time
