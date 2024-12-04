@@ -66,9 +66,12 @@ events = []
 
 for index, evt in enumerate(data.event.unique()):
 
-    print(f"Event: {index}")
+    print(f"Event: {index}, {evt}")
 
     S2_pulse = data_properties_lt[data_properties_lt['event'] == evt]
+
+    if (len(S2_pulse) ==0):
+        continue
 
     S2_area = S2_pulse.S2_areaC.item()
     grass_peaks = S2_pulse.grass_peaks.item()
@@ -96,8 +99,8 @@ for index, evt in enumerate(data.event.unique()):
     events.append(evt)
 
 
-histogram_df = pd.Dataframe("event":events,"S2_areas":S2_areas,"tail_energy": tail_energy )
-display(histogram_df)
+histogram_df = pd.DataFrame({"event":events,"S2_areas":S2_areas,"tail_energy": tail_energy} )
+print(histogram_df)
 
 with open(f"histogram_info_Run_{RUN_NUMBER}.pkl", 'wb') as pickle_file:
     pickle.dump(histogram_df, pickle_file)
@@ -107,5 +110,4 @@ with open(f"histogram_info_Run_{RUN_NUMBER}.pkl", 'wb') as pickle_file:
 
 with pd.HDFStore(f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"+outfilename, mode='w', complevel=5, complib='zlib') as store:
     # Write each DataFrame to the file with a unique key
-    store.put("data_properties", data_properties_lt, format='table')
     store.put('data', data, format='table')
