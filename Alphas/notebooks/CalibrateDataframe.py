@@ -26,11 +26,13 @@ print("RUN is", RUN_NUMBER, " file is", base_name)
 data = pd.read_hdf(filename, "data")
 
 trig_time = 1000
-mean_lt = 52000.0
-if (RUN_NUMBER =="14180"):
+mean_lt = 43000.0
+if (RUN_NUMBER == 14180):
     mean_lt = 52000.0 # mus
-    trig_time = 1000
-
+    trig_time = 1009
+elif (RUN_NUMBER == 14498):
+    mean_lt = 47000.0 # mus
+    trig_time = 1610
 
 data['peak_time'] = data['peak_time'] - trig_time # Need to correct to get the right drift time
 data["pe_intC"]   = data.apply(lambda row: CorrectLifetimeAvg(row, "pe_int", "peak_time",  mean_lt), axis=1)
