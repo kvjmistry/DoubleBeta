@@ -65,12 +65,14 @@ else:
     print(len(file_paths))
 
     histogram_df = []
+    histogram_df1D = []
 
     total_hist = None
 
     for file_path in file_paths:
         with open(file_path, 'rb') as pickle_file:
             histogram_df.append(pickle.load(pickle_file))
+            histogram_df1D.append(pickle.load(pickle_file))
             hist2D = pickle.load(pickle_file)
 
             if total_hist is None:
@@ -79,9 +81,11 @@ else:
                 total_hist += hist2D
 
     histogram_df = pd.concat(histogram_df)
+    histogram_df1D = pd.concat(histogram_df1D)
 
     print(histogram_df)
 
     with open(outfilehist, 'wb') as pickle_file:
         pickle.dump(histogram_df, pickle_file)
+        pickle.dump(histogram_df1D, pickle_file)
         pickle.dump(total_hist, pickle_file)
