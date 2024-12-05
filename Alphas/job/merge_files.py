@@ -69,13 +69,14 @@ else:
     total_hist = None
 
     for file_path in file_paths:
-        histogram_df.append(pickle.load(file_path))
-        hist2D = pickle.load(file_path)
+        with open(file_path, 'rb') as pickle_file:
+            histogram_df.append(pickle.load(pickle_file))
+            hist2D = pickle.load(pickle_file)
 
-        if total_hist is None:
-            total_hist = hist2D
-        else:
-            total_hist += hist2D
+            if total_hist is None:
+                total_hist = hist2D
+            else:
+                total_hist += hist2D
 
     histogram_df = pd.concat(histogram_df)
 
