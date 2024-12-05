@@ -38,7 +38,6 @@ elif (mode == "data"):
     print("Combining Data Table")
     directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"
     outfile=f"Run_{RUN_NUMBER}_FilteredC.h5"
-    outfilehist=f"Run_{RUN_NUMBER}_Histograms.pkl"
     
     file_paths = glob.glob(os.path.join(directory_path, '*.h5'))
     print(len(file_paths))
@@ -60,7 +59,7 @@ elif (mode == "data"):
 
 else:
     directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"
-    outfile=f"Run_{RUN_NUMBER}_HistogramMeta.h5"
+    outfilehist=f"Run_{RUN_NUMBER}_Histograms.pkl"
     
     file_paths = glob.glob(os.path.join(directory_path, '*.pkl'))
     print(len(file_paths))
