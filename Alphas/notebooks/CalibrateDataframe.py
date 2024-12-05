@@ -56,7 +56,7 @@ print(data)
 # Load the data
 data_properties_lt = pd.read_hdf(f"/home/argon/Projects/Krishan/DoubleBeta/Alphas/CalibratedProperties/Properties_Run_{RUN_NUMBER}.h5", "data_properties_lt")
 
-bins = np.arange(40, 770, 50)
+bins = np.arange(50, 750, 50)
 bin_centers = (bins[:-1] + bins[1:]) / 2
 
 total_hist = None
@@ -64,6 +64,8 @@ total_hist = None
 tail_energy = []
 S2_areas = []
 events = []
+
+histogram1D_df = []
 
 for index, evt in enumerate(data.event.unique()):
 
@@ -98,13 +100,18 @@ for index, evt in enumerate(data.event.unique()):
     tail_energy.append(event.pe_intC.sum())
     S2_areas.append(S2_area)
     events.append(evt)
+    histogram1D_df.append(pd.DataFrame({"event":evt, "counts":counts, "centers":bin_centers}))
 
 
 histogram_df = pd.DataFrame({"event":events,"S2_areas":S2_areas,"tail_energy": tail_energy} )
 print(histogram_df)
 
+histogram1D_df = pd.concat(histogram1D_df, ignore_index=True)
+print(histogram1D_df)
+
 with open(f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"+outfilenamepkl, 'wb') as pickle_file:
     pickle.dump(histogram_df, pickle_file)
+    pickle.dump(histogram1D_df, pickle_file)
     pickle.dump(total_hist, pickle_file)
 
 # ---------------------------------------------------------------------------------------------------------------------------------------
