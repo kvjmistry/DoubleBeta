@@ -2,11 +2,15 @@
 import os
 import glob
 import pandas as pd
+import pickle
 
 # Now load in the stack 
 RUN_NUMBER=14180
 
-mode="filt"
+# mode="filt"
+# mode="data"
+mode="hist"
+
 
 if mode == "filt":
     print("Combining Data Properties")
@@ -30,7 +34,7 @@ if mode == "filt":
     with pd.HDFStore(outfile, mode='w', complevel=5, complib='zlib') as store:
         store.put('data_properties',data_properties, format='table')
 
-else:
+elif (mode == "data"):
     print("Combining Data Table")
     directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"
     outfile=f"Run_{RUN_NUMBER}_FilteredC.h5"
@@ -54,7 +58,7 @@ else:
     with pd.HDFStore(outfile, mode='w', complevel=5, complib='zlib') as store:
         store.put('data',data, format='table')
 
-
+else:
     directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"
     outfile=f"Run_{RUN_NUMBER}_HistogramMeta.h5"
     
@@ -79,5 +83,5 @@ else:
     print(histogram_df)
 
     with open(outfilehist, 'wb') as pickle_file:
-    pickle.dump(histogram_df, pickle_file)
-    pickle.dump(total_hist, pickle_file)
+        pickle.dump(histogram_df, pickle_file)
+        pickle.dump(total_hist, pickle_file)
