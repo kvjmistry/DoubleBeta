@@ -335,7 +335,7 @@ with tb.open_file(filename) as file:
 
         cath_df = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, cath_lim)
         cath_df = pd.concat(cath_df, ignore_index=True)
-        cath_area = cath_df.pe_int.sum()*tc
+        cath_area = cath_df.pe_int.sum()
         cath_time = cath_df.peak_time.mean()
         cath_std = cath_df.peak_time.std()
 
