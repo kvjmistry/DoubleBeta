@@ -41,7 +41,7 @@ elif (RUN_NUMBER == 14498):
     cathode_time = 1500
     PE_to_MeV = 3.1225103356461257e-07
     max_lifetime = 100e3
-    bin_range = 4000
+    bin_range = 500
 else:
     print("Error run config is not set")
 
@@ -90,7 +90,7 @@ for index, evt in enumerate(data.event.unique()):
 
     counts, edges = np.histogram(event.peak_time, weights=event.pe_intC/S2_area, bins = bins )
 
-    hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, np.linspace(0,bin_range, 50)])
+    hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, np.linspace(0, bin_range, 50)])
     
     # masked_hist=hist2D
 
