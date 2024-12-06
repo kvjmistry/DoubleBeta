@@ -32,16 +32,16 @@ if (RUN_NUMBER == 14180):
     mean_lt = 43000.0 # mus
     trig_time = 1009
     cathode_time = 803
-    PE_to_MeV = 4.092602958598264e-07
+    PE_to_MeV = 4.1107552268907513e-07
     max_lifetime = 100e3
-    bin_range = 0.18
+    bin_range = 4000
 elif (RUN_NUMBER == 14498):
     mean_lt = 45000.0 # mus
     trig_time = 1610
     cathode_time = 1500
-    PE_to_MeV = 3.11932730810256e-07
+    PE_to_MeV = 3.1225103356461257e-07
     max_lifetime = 100e3
-    bin_range = 0.18
+    bin_range = 4000
 else:
     print("Error run config is not set")
 
