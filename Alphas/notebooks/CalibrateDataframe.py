@@ -66,6 +66,9 @@ total_hist = None
 tail_energy = []
 S2_areas = []
 events = []
+x_binc = []
+y_binc = []
+bin_ids = []
 
 histogram1D_df = []
 
@@ -102,7 +105,10 @@ for index, evt in enumerate(data.event.unique()):
     tail_energy.append(event.pe_intC.sum())
     S2_areas.append(S2_area)
     events.append(evt)
-    histogram1D_df.append(pd.DataFrame({"event":evt, "counts":counts, "centers":bin_centers}))
+    x_binc.append( S2_pulse.x_bin_center.item())
+    y_binc.append( S2_pulse.y_bin_center.item())
+    bin_ids.append( S2_pulse.bin_id.item())
+    histogram1D_df.append(pd.DataFrame({"event":evt, "counts":counts, "centers":bin_centers, "x_binc": x_binc, "y_binc" : y_binc, "bin_id" : bin_ids}))
 
 
 histogram_df = pd.DataFrame({"event":events,"S2_areas":S2_areas,"tail_energy": tail_energy} )

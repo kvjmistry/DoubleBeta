@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J FILTER # A single job name for the array
 #SBATCH --nodes=1
-#SBATCH --mem 4000 # Memory request (6Gb)
+#SBATCH --mem 5000 # Memory request (6Gb)
 #SBATCH -t 0-1:00 # Maximum execution time (D-HH:MM)
 #SBATCH -o FILTER_%A_%a.out # Standard output
 #SBATCH -e FILTER_%A_%a.err # Standard error

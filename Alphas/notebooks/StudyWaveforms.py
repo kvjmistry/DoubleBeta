@@ -218,7 +218,7 @@ dead_pmts = [3, 16, 24, 36, 37, 38, 39,40, 41, 48, 53, 58]
 
 wf_sum = 0
 
-if (RUN_NUMBER == 13850):
+if (RUN_NUMBER == 13850 or RUN_NUMBER == 13859):
     grass_lim   = 1050, 1770 # time window in mus in which to search for single pes
     noise_lim   = 1900, 2000 # time window to calculate the noise baseline
     S1_height   = 10000
@@ -252,6 +252,7 @@ elif (RUN_NUMBER == 14498):
     S2_window   = 1585, 1800 
 
 else:
+    print("No run found, using default argon values...")
     grass_lim   = 1050, 1770 
     noise_lim   = 1900, 2000 
     S1_height   = 10000
