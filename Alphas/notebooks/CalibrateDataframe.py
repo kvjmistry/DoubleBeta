@@ -40,7 +40,7 @@ elif (RUN_NUMBER == 13850):
     mean_lt = 44000.0 # mus
     trig_time = 1009
     cathode_time = 801
-    PE_to_MeV = 4.3821095508076483e-07
+    PE_to_MeV = 4.380634467274111e-07
     max_lifetime = 100e3
     bin_range = 4000
 
