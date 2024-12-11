@@ -35,6 +35,23 @@ if (RUN_NUMBER == 14180):
     PE_to_MeV = 4.1107552268907513e-07
     max_lifetime = 100e3
     bin_range = 4000
+
+elif (RUN_NUMBER == 13850):
+    mean_lt = 44000.0 # mus
+    trig_time = 1009
+    cathode_time = 801
+    PE_to_MeV = 4.3821095508076483e-07
+    max_lifetime = 100e3
+    bin_range = 4000
+
+elif (RUN_NUMBER == 13859):
+    mean_lt = 5800.0 # mus
+    trig_time = 1009
+    cathode_time = 760
+    PE_to_MeV = 5.80816646495761e-07
+    max_lifetime = 100e3
+    bin_range = 4000
+
 elif (RUN_NUMBER == 14498):
     mean_lt = 45000.0 # mus
     trig_time = 1610
