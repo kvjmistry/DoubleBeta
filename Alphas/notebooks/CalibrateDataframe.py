@@ -80,6 +80,13 @@ bin_centers = (bins[:-1] + bins[1:]) / 2
 
 total_hist = None
 
+tail_energy = []
+S2_areas = []
+events = []
+x_binc = []
+y_binc = []
+bin_ids = []
+
 histogram1D_df = []
 
 for index, evt in enumerate(data.event.unique()):
@@ -112,23 +119,16 @@ for index, evt in enumerate(data.event.unique()):
     else:
         total_hist += hist2D
 
-    tail_energy = []
-    S2_areas = []
-    events = []
-    x_binc = []
-    y_binc = []
-    bin_ids = []
-
     tail_energy.append(event.pe_intC.sum())
     S2_areas.append(S2_area)
-    events.append(np.full_like(counts, evt) )
-    x_binc.append( np.full_like(counts, S2_pulse.x_bin_center.item()) )
-    y_binc.append( np.full_like(counts, S2_pulse.y_bin_center.item()) )
-    bin_ids.append( np.full_like(counts, S2_pulse.bin_id.item()))
-    histogram1D_df.append(pd.DataFrame({"event":evt, "counts":counts, "centers":bin_centers, "x_binc": x_binc, "y_binc" : y_binc, "bin_id" : bin_ids}))
+    events.append(evt)
+    x_binc.append( S2_pulse.x_bin_center.item())
+    y_binc.append( S2_pulse.y_bin_center.item())
+    bin_ids.append( S2_pulse.bin_id.item())
+    histogram1D_df.append(pd.DataFrame({"event":evt, "counts":counts, "centers":bin_centers}))
 
 
-histogram_df = pd.DataFrame({"event":events,"S2_areas":S2_areas,"tail_energy": tail_energy} )
+histogram_df = pd.DataFrame({"event":events,"S2_areas":S2_areas,"tail_energy": tail_energy, "x_binc": x_binc, "y_binc" : y_binc, "bin_id" : bin_ids} )
 print(histogram_df)
 
 histogram1D_df = pd.concat(histogram1D_df, ignore_index=True)
