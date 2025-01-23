@@ -177,10 +177,10 @@ def PlotDICE(ax1, ax2, df, varname, title):
               print(f"DICE {index} out of {title} range with val {u}" )
 
 # Define the directory containing the text files
-Gas_files = '/Users/mistryk2/Desktop/Pressure_Data/'
+Gas_files = '/Users/mistryk2/Desktop/Files/Pressure_Data/'
 
 # Define the directory containing the text files
-DICE_files = '/Users/mistryk2/Desktop/Dice_Temps/'
+DICE_files = '/Users/mistryk2/Desktop/Files/Dice_Temps/'
 
 # HHV_files ='/Users/mistryk2/Desktop/HV_Data/'
 
@@ -189,7 +189,7 @@ DICE_files = '/Users/mistryk2/Desktop/Dice_Temps/'
 # DICE_files = fr'{path}\TP\Data\\'
 
 # Number of days to look back
-N_days = 30
+N_days = 45
 
 
 
@@ -233,7 +233,7 @@ DICE_Temps, DICE_TempsMean = LoadData(DICE_paths)
 # print("Printing Cathode HV...")
 # print(Cath_HV)
 
-Today="18_08_2024"
+Today="15_12_2024"
 
 # --------------------------------------------------
 # Plot the pressures
@@ -289,12 +289,12 @@ plt.savefig(f"plots/{Today}_DICE_I", dpi=200)
 # Plot the ratio to DICE0
 plt.figure(figsize=(10, 6))
 
-Ratio = GasPressureMean['PG3']/DICE_TempsMean['DICE0(ºC) T']
+Ratio = GasPressureMean['PG3']/(DICE_TempsMean['DICE0(ºC) T']+273)
 
 plt.plot(DICE_TempsMean.index,  Ratio, color= "Teal", linewidth = 4)
 
 plt.xlabel('Date')
-plt.ylabel('Ratio PG3/DICE 0 Temp [bar/Celcius]')
+plt.ylabel('Ratio PG3/DICE 0 Temp [bar/K]')
 plt.grid(True)
 plt.xticks(rotation=45)
 plt.tight_layout()
