@@ -8,6 +8,11 @@
 
 start=`date +%s`
 
+# Make the log and ensure the access is good
+mkdir -p log
+chmod u+w log/
+
+
 # Setup nexus and run
 echo "Setting up nexus"
 source /home/argon/Projects/Krishan/nexus/setup_cluster.sh
@@ -16,7 +21,7 @@ source /home/argon/Projects/Krishan/venv/bin/activate
 JOBNAME="photoelectric"
 N_EVENTS=5000000
 CONFIG=NEXT100_S2_LT.config.mac
-INIT=NEXT100_S2_LT.config.mac
+INIT=NEXT100_S2_LT.init.mac
 
 # Create the directory
 cd /home/argon/Projects/Krishan/DoubleBeta/Alphas/
