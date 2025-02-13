@@ -1,0 +1,37 @@
+## ----------------------------------------------------------------------------
+## nexus | NEXT100_S2_LT.config.mac
+##
+## Configuration macro to simulate secondary scintillation light
+## for look-up tables in the NEXT-100 detector.
+##
+## The NEXT Collaboration
+## ----------------------------------------------------------------------------
+
+##### VERBOSITY #####
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+
+/process/em/verbose 0
+
+##### JOB CONTROL #####
+/nexus/random_seed 10
+
+##### GEOMETRY #####
+/Geometry/Next100/max_step_size 4. mm
+/Geometry/Next100/el_gap_slice_max 1
+/Geometry/Next100/el_gap_slice_min 0
+/Geometry/Next100/gas GAr
+/Geometry/Next100/pressure 4 bar
+
+/nexus/persistency/start_id 99
+/nexus/random_seed 99
+
+
+
+#### GENERATOR ####
+/Generator/ScintGenerator/nphotons 1
+/Generator/ScintGenerator/region   S2_PMT_LT
+
+#### PERSISTENCY ####
+/nexus/persistency/output_file Next100_X_0_Y_0_Z_0
