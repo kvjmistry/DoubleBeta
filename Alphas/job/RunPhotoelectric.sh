@@ -23,7 +23,7 @@ cd /home/argon/Projects/Krishan/DoubleBeta/Alphas/
 mkdir -p $JOBNAME/jobid_"${SLURM_ARRAY_TASK_ID}"
 cd $JOBNAME/jobid_"${SLURM_ARRAY_TASK_ID}"
 
-cp /home/argon/Projects/Krishan/DoubleBeta/Alphas/*mac* .
+cp /home/argon/Projects/Krishan/DoubleBeta/Alphas/config/*mac* .
 
 # Calculate the unique seed number  
 SEED=$((${N_EVENTS}*(${SLURM_ARRAY_TASK_ID} - 1) + ${N_EVENTS}))
@@ -37,7 +37,7 @@ sed -i "s#.*output_file.*#/nexus/persistency/output_file ${JOBNAME}_${SLURM_ARRA
 # NEXUS
 echo "Running NEXUS" 
 nexus -n $N_EVENTS ${INIT}
-python3 /home/argon/Projects/Krishan/DoubleBeta/Alphas/compress_files.py ${JOBNAME}_${SLURM_ARRAY_TASK_ID}.h5
+python3 /home/argon/Projects/Krishan/DoubleBeta/Alphas/scripts/compress_files.py ${JOBNAME}_${SLURM_ARRAY_TASK_ID}.h5
 
 rm *.mac
 
