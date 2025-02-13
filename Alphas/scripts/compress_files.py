@@ -10,6 +10,9 @@ import pandas as pd
 parts = pd.read_hdf(sys.argv[1], key = 'MC/particles')
 parts = parts[parts.primary == 1]
 parts = parts[(parts.initial_x > -500) & (parts.initial_x < 500) & (parts.initial_y > -500) & (parts.initial_y < 500)] # skim off events just outside the bin range
+parts = parts[["event_id", "initial_x", "initial_y"]]
+parts["initial_x"] = parts["initial_x"].astype("float16")
+parts["initial_y"] = parts["initial_y"].astype("float16")
 print(parts)
 
 # Same with the hits

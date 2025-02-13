@@ -5,6 +5,7 @@
 #SBATCH -t 0-1:00 # Maximum execution time (D-HH:MM)
 #SBATCH -o log/PHOTOELECTRIC_%A_%a.out # Standard output
 #SBATCH -e log/PHOTOELECTRIC_%A_%a.err # Standard error
+#SBATCH --array=1-100%15
 
 start=`date +%s`
 
@@ -19,7 +20,7 @@ source /home/argon/Projects/Krishan/nexus/setup_cluster.sh
 source /home/argon/Projects/Krishan/venv/bin/activate
 
 JOBNAME="photoelectric"
-N_EVENTS=5000000
+N_EVENTS=1000000
 CONFIG=NEXT100_S2_LT.config.mac
 INIT=NEXT100_S2_LT.init.mac
 
