@@ -50,13 +50,13 @@ elif (RUN_NUMBER == 13859):
     cathode_time = 760
     PE_to_MeV = 5.80816646495761e-07
     max_lifetime = 100e3
-    bin_range = 4000
+    bin_range = 25000
 
 elif (RUN_NUMBER == 14498):
     mean_lt = 45000.0 # mus
     trig_time = 1610
     cathode_time = 1500
-    PE_to_MeV = 3.1225103356461257e-07
+    PE_to_MeV = 3.139451326134709e-07
     max_lifetime = 100e3
     bin_range = 500
 else:
