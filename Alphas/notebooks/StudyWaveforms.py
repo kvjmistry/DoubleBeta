@@ -376,7 +376,12 @@ with tb.open_file(filename) as file:
         cath_time = cath_df.peak_time.mean()
         cath_std = cath_df.peak_time.std()
 
-        FWHM, S2_amplitude = find_fwhm(times[int(S2_start/tc):int(S2_end/tc)], wfs_sum[int(S2_start/tc):int(S2_end/tc)])
+        try:
+            FWHM, S2_amplitude = find_fwhm(times[int(S2_start/tc):int(S2_end/tc)], 
+                                        wfs_sum[int(S2_start/tc):int(S2_end/tc)])
+        except:
+            print("Error on FWHM calculation, skipping")
+            continue # Continue without interruption
 
         # Also try fitting
         A, mu, sigma = FitS2(times[int(S2_start/tc):int(S2_end/tc)], wfs_sum[int(S2_start/tc):int(S2_end/tc)])
