@@ -137,26 +137,25 @@ def find_highest_sipm(wfs, event_number):
     return index
 
 # Get interpolation of the background noise just after the S2
-def GetBaselineInterp(noise, wfs, t_pmt):
+def GetBaselineInterp(times, wfs):
 
     interps = []
     for pmt_no, wf in enumerate(wfs):
-        threshold = noise[pmt_no]
 
-        # Select points where amplitude is below the threshold
-        mask = (wf < threshold) & (wf > -threshold)
-        filtered_time = t_pmt[mask]
-        filtered_amplitude = wf[mask]
+        # Apply trimmed mean over a sliding window
+        window_size = 100  # Adjust as needed
+        trim_ratio = 0.4  # Trim 10% from each side
 
-        if (len(filtered_amplitude) == 0):
-            filtered_time = t_pmt
-            filtered_amplitude = np.zeros(len(t_pmt))
-        
-        # Generate smooth line over the full time range
-        smoothed_amplitude = savgol_filter(filtered_amplitude, 301, 1)
+        trimmed_wfm = np.array([
+            trim_mean(wf[i:i+window_size], proportiontocut=trim_ratio) 
+            for i in range(0, len(wf), window_size)
+        ])
+
+        # Downsample the time array to match the trimmed values
+        trimmed_times = times[::window_size]
 
         # Interpolate the smoothed data
-        interp_func = interp1d(filtered_time, smoothed_amplitude, kind='cubic', bounds_error=False, fill_value=0)  # Cubic interpolation for smoothness
+        interp_func = interp1d(trimmed_times, trimmed_wfm, kind='cubic', bounds_error=False, fill_value=0)  # Cubic interpolation for smoothness
         interps.append(interp_func)
 
     return interps
@@ -197,6 +196,17 @@ def FitS2(time, amplitude):
     A, mu, sigma = params
 
     return A, mu, sigma
+
+# Function to get the mean and standard deviation of the baseline correction at grass lim start
+def GetInterpParams(interps, grass_lim):
+    interp_amp = np.array([])
+    for interp in interps:
+        interp_amp = np.append(interp_amp, interp(grass_lim[0]))
+
+    mean_interp_amp=np.mean(interp_amp)
+    std_interp_amp = np.std(interp_amp)
+
+    return mean_interp_amp, std_interp_amp
 
 
 filename  = sys.argv[1]
@@ -262,6 +272,17 @@ elif (RUN_NUMBER == 14498):
     S1_window   = 100, 1585
     S2_window   = 1585, 1800 
 
+elif (RUN_NUMBER == 14780): 
+    grass_lim   = 1650, 2350
+    noise_lim   = 2500, 2600
+    S1_height   = 20000
+    S2_height   = 50000
+    S2_start    = 1590
+    S2_end      = 1640
+    cath_lim    = 2500, 2600
+    S1_window   = 100, 1585
+    S2_window   = 1585, 1800 
+
 else:
     print("No run found, using default argon values...")
     grass_lim   = 1050, 1770 
@@ -308,8 +329,9 @@ with tb.open_file(filename) as file:
         wfs = ADC_to_PE(wfs, datapmt)
 
         # Zero out the dead PMTs
-        for pmt_ in dead_pmts:
-            wfs[pmt_] = np.arange(wfs[pmt_] .size) * 0
+        if (RUN_NUMBER != 14780):
+            for pmt_ in dead_pmts:
+                wfs[pmt_] = np.arange(wfs[pmt_] .size) * 0
         
         wfs_sum = sum_wf(wfs)
 
@@ -328,10 +350,12 @@ with tb.open_file(filename) as file:
         for pmt_no, wf in enumerate(wfs):
             noise.append(noise_sigma*np.std(wf[int(noise_lim[0]/tc):int(noise_lim[1]/tc)]))
 
-        interps = GetBaselineInterp(noise, wfs, times)
+        interps = GetBaselineInterp(times, wfs)
+
+        mean_interp_amp, std_interp_amp = GetInterpParams(interps, grass_lim)
 
         # Correct the waveforms
-        wfs = CorrectDeconvBaseline(times, grass_lim[0], grass_lim[0]+500, interps, wfs) # Correct baseline 500 mus after the pulse
+        wfs = CorrectDeconvBaseline(times, grass_lim[0], noise_lim[1], interps, wfs) # Correct baseline to the end of the waveform
 
         wfs_sum_cor = sum_wf(wfs)
 
@@ -357,7 +381,7 @@ with tb.open_file(filename) as file:
         A, mu, sigma = FitS2(times[int(S2_start/tc):int(S2_end/tc)], wfs_sum[int(S2_start/tc):int(S2_end/tc)])
         area = A * sigma * np.sqrt(2 * np.pi)
 
-        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area, S2_areafit=area, S2_time = mu, cath_area=cath_area, cath_time=cath_time, cath_std=cath_std, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos, grass_peaks = len(grass_peaks), nS1 = len(S1)), index=[0]))
+        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area, S2_areafit=area, S2_time = mu, cath_area=cath_area, cath_time=cath_time, cath_std=cath_std, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos, grass_peaks = len(grass_peaks), nS1 = len(S1), mean_interp_amp= mean_interp_amp, std_interp_amp=std_interp_amp), index=[0]))
 
         # Check the baseline, if we got something really negative
         # then the deconvolution likely failed, so skip grass calculation
