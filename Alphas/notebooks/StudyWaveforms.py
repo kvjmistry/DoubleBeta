@@ -12,6 +12,7 @@ from datetime import datetime
 from scipy.signal import savgol_filter
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
+from scipy.stats import trim_mean
 
 def sum_wf(wfs, event_number):
     assert len(wfs.shape) == 3, "input must be 3-dimensional"
