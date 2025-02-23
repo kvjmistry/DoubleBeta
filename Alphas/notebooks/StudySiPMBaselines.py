@@ -45,11 +45,9 @@ def CorrectRawBaseline(wfs):
     return np.array(corrected_waveforms)
 
 
-def GetS2Areas(wfs):
+def GetS2Areas(wfs, S2_start, S2_end):
 
     S2_areas = []
-    S2_start    = 1590
-    S2_end      = 1640
 
     for wf_sipm in wfs:
         S2_area = wf_sipm[int(S2_start):int(S2_end)]
@@ -88,7 +86,41 @@ outfilename = base_name.replace(".waveforms", "_sipm")
 detector_db = "next100"
 datasipm = load_db.DataSiPM(detector_db, RUN_NUMBER)
 
-baselinewindow =  1700, 3000
+
+
+if (RUN_NUMBER == 13850):
+    baselinewindow =  1100, 3000
+    S2_start    = 990        # S2 integration window start
+    S2_end      = 1040       # S2 integration window end
+
+elif (RUN_NUMBER == 13859):
+    baselinewindow =  1100, 3000
+    S2_start    = 990        # S2 integration window start
+    S2_end      = 1040       # S2 integration window end
+
+elif (RUN_NUMBER == 14180):
+    baselinewindow =  1100, 3000
+    S2_start    = 990        # S2 integration window start
+    S2_end      = 1040       # S2 integration window end
+
+elif (RUN_NUMBER == 14498):
+    baselinewindow   = 1700, 2600
+    noise_lim   = 2500, 2600
+    S2_start    = 1590
+    S2_end      = 1640
+
+elif (RUN_NUMBER == 14780): 
+    baselinewindow   = 1700, 2600
+    noise_lim   = 2500, 2600
+    S2_start    = 1590
+    S2_end      = 1640
+
+else:
+    print("No run found, using default argon values...")
+    baselinewindow =  1100, 3000
+    S2_start    = 990        # S2 integration window start
+    S2_end      = 1040       # S2 integration window end
+
 
 sipm_properties = []
 
@@ -97,7 +129,6 @@ with tb.open_file(filename) as file:
     evt_info = file.root.Run.events
     rwf      = file.root.RD.sipmrwf
     
-    # tsel     = in_range(time, *grass_lim)
     for evt_no, wfs in enumerate(rwf):
 
         print("On Event:", evt_no)
@@ -110,7 +141,7 @@ with tb.open_file(filename) as file:
         sp_sipm = 1     # sampling period in mus
         times  = np.arange(wfs[0].size) * sp_sipm
 
-        S2_areas = GetS2Areas(wfs)
+        S2_areas = GetS2Areas(wfs,S2_start, S2_end)
 
         interps = GetBaselineInterp(times, wfs)
         slopes, intercepts, offsets = BaselineFit(interps, baselinewindow[0],baselinewindow[1])
