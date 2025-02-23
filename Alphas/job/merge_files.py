@@ -12,7 +12,8 @@ RUN_NUMBER=14498
 
 # mode="filt"
 # mode="data"
-mode="hist"
+# mode="hist"
+mode="sipm"
 
 
 if mode == "filt":
@@ -59,6 +60,28 @@ elif (mode == "data"):
     # Open the HDF5 file in write mode
     with pd.HDFStore(outfile, mode='w', complevel=5, complib='zlib') as store:
         store.put('data',data, format='table')
+
+elif (mode == "sipm"):
+    print("Combining sipm Table")
+    directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/sipm_baselines/{RUN_NUMBER}/"
+    outfile=f"Run_{RUN_NUMBER}_SiPM.h5"
+    
+    file_paths = glob.glob(os.path.join(directory_path, '*.h5'))
+    print(len(file_paths))
+
+    data = []
+
+    for file_path in file_paths:
+        data.append(pd.read_hdf(file_path, key = 'sipm_properties'))
+
+    data = pd.concat(data)
+
+    print(data)
+
+    # Open the HDF5 file in write mode
+    with pd.HDFStore(outfile, mode='w', complevel=5, complib='zlib') as store:
+        store.put('sipm_properties',data, format='table')
+
 
 else:
     directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"
