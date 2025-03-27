@@ -59,6 +59,15 @@ elif (RUN_NUMBER == 14498):
     PE_to_MeV = 3.139451326134709e-07
     max_lifetime = 100e3
     bin_range = 500
+
+elif (RUN_NUMBER == 14780):
+    mean_lt = 60000.0 # mus
+    trig_time = 1610
+    cathode_time = 1500
+    PE_to_MeV = 3.0007670255073243e-07
+    max_lifetime = 200e3
+    bin_range = 500
+
 else:
     print("Error run config is not set")
 
