@@ -37,7 +37,7 @@ def sum_wf(wfs):
     return element_wise_sum
 
 
-def check_summed_baseline(wfs_sum, grass_lim, scale_factor):
+def check_summed_baseline(wfs_sum, grass_lim, S1_height):
 
     flag=False
     tc=25e-3
@@ -48,28 +48,30 @@ def check_summed_baseline(wfs_sum, grass_lim, scale_factor):
     baseline1=np.mean(wfs_sum[-num_samples:])
     baseline2=np.mean(wfs_sum[0:int(25/tc)])
 
-    # 20 seems like a good number to check the difference against
-    if (abs(baseline1-baseline2) > 20*scale_factor):
+    # Check if the baseline varies by more than 0.1 PE
+    if (abs(baseline1-baseline2) > 0.2):
         print("Error in baselines at start and end, dropping event")
         print(baseline1-baseline2)
         flag = True
 
-    # Look in the window for large peaks that could be other S2 pulses. 
+    # Look in the window for large peaks that could be other S1/S2 pulses. 
     # This will mess up the reconstruction
-    peaks, _ = find_peaks(wfs_sum[ int(grass_lim[0]/tc):int(grass_lim[1]/tc)], height=2000, distance=30/tc)
+    peaks, _ = find_peaks(wfs_sum[ int(grass_lim[0]/tc):int(grass_lim[1]/tc)], height=S1_height, distance=30/tc)
 
-    peaks_filt = np.array([
-        p for p in peaks
-        if wfs_sum[int(p + grass_lim[0]/tc - 5/tc) : int(p + grass_lim[0]/tc + 5/tc)].sum() > 1e6
-    ])
+    bin_fact=100 # rebin amount
+    wfs_sum_binned = rebin_array(wfs_sum, bin_fact)
+    peaks_rebin, _ = find_peaks(wfs_sum_binned[ int(grass_lim[0]/(tc*bin_fact)):int(grass_lim[1]/(tc*bin_fact))], height=0.6)
+    peaks_rebin = peaks_rebin*bin_fact
+
+    peaks_filt = np.append(peaks, peaks_rebin)
 
     return flag, peaks_filt
 
-def get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim):
+def get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, window):
 
     df = []
 
-    tsel_     = in_range(times, *grass_lim)
+    tsel_     = in_range(times, *window)
     wfs = wfs[:, tsel_]
 
     for pmt_no, wf in enumerate(wfs):
@@ -124,8 +126,9 @@ def ADC_to_PE(wfs, datapmt):
 
     for w in range(0, len(wfs)):
         if (conv_factors[w] == 1e5):
-            conv_factors[w] = 0
-        wfs[w] = wfs[w]*conv_factors[w]
+             wfs[w] = wfs[w]*0
+        else:
+            wfs[w] = wfs[w]/conv_factors[w]
 
     return wfs
 
@@ -209,6 +212,11 @@ def GetInterpParams(interps, grass_lim):
 
     return mean_interp_amp, std_interp_amp
 
+# Rebin a waveform
+def rebin_array(arr, bin_size):
+    new_len = len(arr) // bin_size  # Ensure integer division
+    return np.mean(arr[:new_len * bin_size].reshape(new_len, bin_size), axis=1)
+
 
 filename  = sys.argv[1]
 RUN_NUMBER= int(sys.argv[2])
@@ -223,7 +231,6 @@ peak_maxlen = 10     # maximum number of samples above threshold in a peak
 half_window = 4      # number of samples to each side of a peak maximum to integrate
 tc          = 25e-3  # constant to convert from samples to time or vice versa. 
 noise_sigma = 4      # how many STD above noise for the single PEs to be
-scale_factor = 40*60 # Scale factor for summed waveform. 60 Pmts, 40 is ~ the conversion factor
 
 dead_pmts = [3, 16, 24, 36, 37, 38, 39,40, 41, 48, 53, 58]
 
@@ -232,8 +239,8 @@ wf_sum = 0
 if (RUN_NUMBER == 13850):
     grass_lim   = 1050, 1770 # time window in mus in which to search for single pes
     noise_lim   = 1900, 2000 # time window to calculate the noise baseline
-    S1_height   = 10000
-    S2_height   = 50000
+    S1_height   = 10
+    S2_height   = 10
     S2_start    = 990        # S2 integration window start
     S2_end      = 1040       # S2 integration window end
     cath_lim    = 1785, 1860 # start/end window for cathode events
@@ -243,8 +250,8 @@ if (RUN_NUMBER == 13850):
 elif (RUN_NUMBER == 13859):
     grass_lim   = 1300, 1770 # time window in mus in which to search for single pes
     noise_lim   = 1900, 2000 # time window to calculate the noise baseline
-    S1_height   = 10000
-    S2_height   = 50000
+    S1_height   = 10
+    S2_height   = 10
     S2_start    = 990        # S2 integration window start
     S2_end      = 1040       # S2 integration window end
     cath_lim    = 1785, 1860 # start/end window for cathode events
@@ -254,8 +261,8 @@ elif (RUN_NUMBER == 13859):
 elif (RUN_NUMBER == 14180):
     grass_lim   = 1050, 1770 
     noise_lim   = 1900, 2000 
-    S1_height   = 10000
-    S2_height   = 50000
+    S1_height   = 10
+    S2_height   = 10
     S2_start    = 990
     S2_end      = 1040
     cath_lim    = 1785, 1860
@@ -265,8 +272,8 @@ elif (RUN_NUMBER == 14180):
 elif (RUN_NUMBER == 14498):
     grass_lim   = 1650, 2350
     noise_lim   = 2500, 2600
-    S1_height   = 20000
-    S2_height   = 50000
+    S1_height   = 4
+    S2_height   = 8
     S2_start    = 1590
     S2_end      = 1640
     cath_lim    = 2500, 2550 
@@ -276,8 +283,8 @@ elif (RUN_NUMBER == 14498):
 elif (RUN_NUMBER == 14780): 
     grass_lim   = 1650, 2350
     noise_lim   = 2500, 2600
-    S1_height   = 20000
-    S2_height   = 50000
+    S1_height   = 4
+    S2_height   = 8
     S2_start    = 1590
     S2_end      = 1640
     cath_lim    = 2500, 2600
@@ -306,6 +313,8 @@ datapmt = load_db.DataPMT(detector_db, RUN_NUMBER)
 
 data = []
 data_properties = []
+noise_df = []
+
 with tb.open_file(filename) as file:
     evt_info = file.root.Run.events
     rwf      = file.root.RD.pmtrwf
@@ -338,15 +347,21 @@ with tb.open_file(filename) as file:
 
         times   = np.arange(wfs_sum .size) * tc # sampling period in mus
 
-        S1, _ = find_peaks(wfs_sum[ int(S1_window[0]/tc):int(S1_window[1]/tc)], height=S1_height, distance=40/tc)
-        S2, _ = find_peaks(wfs_sum[ int(S2_window[0]/tc):int(S2_window[1]/tc)], height=S2_height, distance=200/tc)
+        S1, _ = find_peaks(wfs_sum[ int(S1_window[0]/tc):int(S1_window[1]/tc)], height=S1_height, distance=10/tc)
+        S2, _ = find_peaks(wfs_sum[ int(S2_window[0]/tc):int(S2_window[1]/tc)], height=S2_height, distance=50/tc)
+
+        if (len(S1) ==0):
+            print("No S1!")
+
+        if (len(S2) ==0):
+            print("No S2!")
 
         if (len(S1) !=1 or len(S2)!=1 ):
             deltaT = -999
         else:
             deltaT = S2[0]*tc+S2_window[0] - (S1[0]*tc+S1_window[0])
 
-        # Calcilate the noise of the PMT
+        # Calculate the noise of the PMT
         noise = []
         for pmt_no, wf in enumerate(wfs):
             noise.append(noise_sigma*np.std(wf[int(noise_lim[0]/tc):int(noise_lim[1]/tc)]))
@@ -361,20 +376,23 @@ with tb.open_file(filename) as file:
         wfs_sum_cor = sum_wf(wfs)
 
         # Check if the corrected event failed the quality control
-        pass_flag, grass_peaks = check_summed_baseline(wfs_sum_cor, grass_lim, scale_factor)
+        pass_flag, grass_peaks = check_summed_baseline(wfs_sum_cor, grass_lim, S1_height)
         if (pass_flag):
             print("Event Failed Quality Control...")
             continue
+
+        if (len(grass_peaks!=0)):
+            print("Num Grass Peaks:", len(grass_peaks))
 
         # Sum values in the peak up to the point where the pulse goes to zero
         S2_area = wfs_sum[int(S2_start/tc):int(S2_end/tc)]
         S2_area = S2_area[S2_area > 0].sum()*tc
 
-        cath_df = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, cath_lim)
-        cath_df = pd.concat(cath_df, ignore_index=True)
+        cath_df   = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, cath_lim)
+        cath_df   = pd.concat(cath_df, ignore_index=True)
         cath_area = cath_df.pe_int.sum()
         cath_time = cath_df.peak_time.mean()
-        cath_std = cath_df.peak_time.std()
+        cath_std  = cath_df.peak_time.std()
 
         try:
             FWHM, S2_amplitude = find_fwhm(times[int(S2_start/tc):int(S2_end/tc)], 
@@ -392,20 +410,33 @@ with tb.open_file(filename) as file:
         # Check the baseline, if we got something really negative
         # then the deconvolution likely failed, so skip grass calculation
         min_baseline = min(wfs_sum_cor[int((grass_lim[0]-50)/tc):int((grass_lim[0]+100)/tc)])
-        if (min_baseline > -2000):
+        if (min_baseline > -5):
             df = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim)
             data = data + df
 
         else:
             print("Problem with deconvolution", min_baseline)
 
+        # now add a search window before the S1 to understand the background
+        if (len(S1)== 0):
+            noise_range = 0,500
+        else:
+            noise_range = 0, S1[0]*tc+S1_window[0]-10
+        print("Noise range is:", noise_range[1])
+        
+        noise_df_temp = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, noise_range)
+        noise_df = noise_df + noise_df_temp
+
     data = pd.concat(data, ignore_index=True)
     data = data.assign(ts = np.array(list(map(datetime.fromtimestamp, data.ts_raw))))
+    noise_df = pd.concat(noise_df, ignore_index=True)
 
     data_properties = pd.concat(data_properties, ignore_index=True)
     data_properties = data_properties.assign(ts = np.array(list(map(datetime.fromtimestamp, data_properties.ts_raw))))
 
 print(data_properties)
+print(data)
+print(noise_df)
 
 with pd.HDFStore(f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filtered/{RUN_NUMBER}/"+outfilename, mode='w', complevel=5, complib='zlib') as store:
     # Write each DataFrame to the file with a unique key
