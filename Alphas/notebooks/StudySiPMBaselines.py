@@ -146,6 +146,10 @@ with tb.open_file(filename) as file:
         interps = GetBaselineInterp(times, wfs)
         slopes, intercepts, offsets = BaselineFit(interps, baselinewindow[0],baselinewindow[1])
 
+        # If any values give a negative slope, then increase the baselinefit
+        if any(x < 0 for x in slopes):
+            slopes, intercepts, offsets = BaselineFit(interps, baselinewindow[0]+200,baselinewindow[1])
+
         ## add to the dataframe
         for index in datasipm.index:
             if (S2_areas[index] < 1000):
