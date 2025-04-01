@@ -5,15 +5,15 @@ import pandas as pd
 import pickle
 
 # Now load in the stack 
-# RUN_NUMBER=13850
+RUN_NUMBER=13850
 # RUN_NUMBER=13859
 # RUN_NUMBER=14180
-RUN_NUMBER=14498
+# RUN_NUMBER=14498
 
-# mode="filt"
+mode="filt"
 # mode="data"
 # mode="hist"
-mode="sipm"
+# mode="sipm"
 
 
 if mode == "filt":

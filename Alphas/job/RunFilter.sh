@@ -5,7 +5,7 @@
 #SBATCH -t 0-1:00 # Maximum execution time (D-HH:MM)
 #SBATCH -o log/FILTER_%A_%a.out # Standard output
 #SBATCH -e log/FILTER_%A_%a.err # Standard error
-#SBATCH --array=1-568%15
+#SBATCH --array=1-326
 
 
 start=`date +%s`
@@ -14,10 +14,10 @@ start=`date +%s`
 echo "Setting up IC"
 source /home/argon/Projects/Krishan/IC/setup_IC.sh
 
-# RUN_NUMBER=13850
+RUN_NUMBER=13850 # 326
 # RUN_NUMBER=14180
-# RUN_NUMBER=14498
-RUN_NUMBER=14780
+# RUN_NUMBER=14498 
+# RUN_NUMBER=14780 # 568%15
 
 mkdir -p /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filtered/${RUN_NUMBER}/
 cd       /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filtered/${RUN_NUMBER}/
