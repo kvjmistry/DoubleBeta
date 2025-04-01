@@ -194,7 +194,7 @@ def FitS2(time, amplitude):
     time_slice = time[above_half_max]
 
     # Perform the curve fit
-    params, covariance = curve_fit(Gaussian, time[above_half_max], amplitude[above_half_max], bounds = ([1e3, min(time_slice),1], [8.5e8, max(time_slice),50]))
+    params, covariance = curve_fit(Gaussian, time[above_half_max], amplitude[above_half_max], bounds = ([1, min(time_slice),1], [1e6, max(time_slice),100]))
 
     # Extract the fitted parameters
     A, mu, sigma = params
