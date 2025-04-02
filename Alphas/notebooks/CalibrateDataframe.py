@@ -27,7 +27,6 @@ print("RUN is", RUN_NUMBER, " file is", base_name)
 
 data = pd.read_hdf(filename, "data")
 
-
 if (RUN_NUMBER == 14180):
     mean_lt = 38000.0 # mus
     trig_time = 1009
@@ -35,6 +34,7 @@ if (RUN_NUMBER == 14180):
     PE_to_MeV = 7.6505151395e-04
     max_lifetime = 100e3
     bin_range = 4000
+    S2_area_cut = 3000 # values less than this are cut
 
 elif (RUN_NUMBER == 13850):
     mean_lt = 31000.0 # mus
@@ -43,6 +43,7 @@ elif (RUN_NUMBER == 13850):
     PE_to_MeV = 8.0533004732e-04
     max_lifetime = 100e3
     bin_range = 4000
+    S2_area_cut = 3000
 
 elif (RUN_NUMBER == 13859):
     mean_lt = 5800.0 # mus
@@ -51,6 +52,7 @@ elif (RUN_NUMBER == 13859):
     PE_to_MeV = 5.80816646495761e-07
     max_lifetime = 100e3
     bin_range = 25000
+    S2_area_cut = 3000
 
 elif (RUN_NUMBER == 14498):
     mean_lt = 43000.0 # mus
@@ -59,6 +61,7 @@ elif (RUN_NUMBER == 14498):
     PE_to_MeV = 4.3763144213e-04
     max_lifetime = 100e3
     bin_range = 500
+    S2_area_cut = 3000
 
 elif (RUN_NUMBER == 14780):
     mean_lt = 63000.0 # mus
@@ -67,6 +70,7 @@ elif (RUN_NUMBER == 14780):
     PE_to_MeV = 2.4326013304e-04
     max_lifetime = 200e3
     bin_range = 500
+    S2_area_cut = 9000 
 
 else:
     print("Error run config is not set")
@@ -77,6 +81,9 @@ data["pe_intC"]   = data.apply(lambda row: CorrectLifetimeAvg(row, "pe_int", "pe
 # Convert from PE to eV
 data["pe_intC"] = data["pe_intC"]*PE_to_MeV*1e6
 data["pe_int"]  = data["pe_int"]*PE_to_MeV*1e6
+
+
+data = data.merge(grouped_noise, on='event', how='left')
 
 print(data)
 
@@ -96,6 +103,7 @@ events = []
 x_binc = []
 y_binc = []
 bin_ids = []
+Radii = []
 
 histogram1D_df = []
 
@@ -104,6 +112,7 @@ for index, evt in enumerate(data.event.unique()):
     print(f"Event: {index}, {evt}")
 
     S2_pulse = data_properties_lt[data_properties_lt['event'] == evt]
+    S2_pulse["R"] = np.sqrt(S2_pulse["x"]*S2_pulse["x"] + S2_pulse["y"]*S2_pulse["y"])
 
     if (len(S2_pulse) ==0):
         continue
@@ -112,13 +121,13 @@ for index, evt in enumerate(data.event.unique()):
     grass_peaks = S2_pulse.grass_peaks.item()
     event = data[data.event == evt]
 
-    if (S2_area < 3000):
+    if (S2_area < S2_area_cut):
         continue
 
     if (grass_peaks >0):
         continue
 
-    counts, edges = np.histogram(event.peak_time, weights=event.pe_intC/S2_area, bins = bins )
+    counts, edges = np.histogram(event.peak_time, weights=(event.pe_int - event.bkg)/S2_area, bins = bins )
 
     hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, np.linspace(0, bin_range, 50)])
     
@@ -135,7 +144,9 @@ for index, evt in enumerate(data.event.unique()):
     x_binc.append( S2_pulse.x_bin_center.item())
     y_binc.append( S2_pulse.y_bin_center.item())
     bin_ids.append( S2_pulse.bin_id.item())
-    histogram1D_df.append(pd.DataFrame({"event":evt, "counts":counts, "centers":bin_centers}))
+    Radii.append(S2_pulse.R.item())# Radial pos of the S2 event 
+
+    histogram1D_df.append(pd.DataFrame({"event":evt, "counts":counts, "centers":bin_centers, "R": Radii}))
 
 
 histogram_df = pd.DataFrame({"event":events,"S2_areas":S2_areas,"tail_energy": tail_energy, "x_binc": x_binc, "y_binc" : y_binc, "bin_id" : bin_ids} )

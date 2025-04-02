@@ -442,12 +442,12 @@ with tb.open_file(filename) as file:
 grouped_noise = noise_df.groupby(['event'])['pe_int'].sum().reset_index()
 grouped_noise = grouped_noise.rename(columns={'pe_int': 'bkg'})
 
+data = data.merge(grouped_noise, on='event', how='left')
+
 print(data_properties)
 print(data)
-print(grouped_noise)
 
 with pd.HDFStore(f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filtered/{RUN_NUMBER}/"+outfilename, mode='w', complevel=5, complib='zlib') as store:
     # Write each DataFrame to the file with a unique key
     store.put('data', data, format='table')
     store.put('data_properties', data_properties, format='table')
-    store.put('grouped_noise', grouped_noise, format='table')
