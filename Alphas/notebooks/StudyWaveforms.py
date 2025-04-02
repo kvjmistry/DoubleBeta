@@ -429,6 +429,8 @@ with tb.open_file(filename) as file:
         print("Noise range is:", noise_range[1])
         
         noise_df_temp = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, noise_range)
+        for t in noise_df_temp:
+            t["timewin"] = noise_range[1]
         noise_df = noise_df + noise_df_temp
 
     data = pd.concat(data, ignore_index=True)
@@ -439,7 +441,7 @@ with tb.open_file(filename) as file:
     data_properties = data_properties.assign(ts = np.array(list(map(datetime.fromtimestamp, data_properties.ts_raw))))
 
 # Merge the noise
-grouped_noise = noise_df.groupby(['event'])['pe_int'].sum().reset_index()
+grouped_noise = noise_df.groupby(['event','timewin'])['pe_int'].sum().reset_index()
 grouped_noise = grouped_noise.rename(columns={'pe_int': 'bkg'})
 
 data = data.merge(grouped_noise, on='event', how='left')
