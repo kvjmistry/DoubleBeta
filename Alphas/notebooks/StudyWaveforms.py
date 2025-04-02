@@ -443,6 +443,7 @@ grouped_noise = noise_df.groupby(['event'])['pe_int'].sum().reset_index()
 grouped_noise = grouped_noise.rename(columns={'pe_int': 'bkg'})
 
 data = data.merge(grouped_noise, on='event', how='left')
+data_properties = data_properties.merge(grouped_noise, on='event', how='left')
 
 print(data_properties)
 print(data)
