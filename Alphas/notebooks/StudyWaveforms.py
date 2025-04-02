@@ -438,11 +438,16 @@ with tb.open_file(filename) as file:
     data_properties = pd.concat(data_properties, ignore_index=True)
     data_properties = data_properties.assign(ts = np.array(list(map(datetime.fromtimestamp, data_properties.ts_raw))))
 
+# Merge the noise
+grouped_noise = noise_df.groupby(['event'])['pe_int'].sum().reset_index()
+grouped_noise = grouped_noise.rename(columns={'pe_int': 'bkg'})
+
 print(data_properties)
 print(data)
-print(noise_df)
+print(grouped_noise)
 
 with pd.HDFStore(f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filtered/{RUN_NUMBER}/"+outfilename, mode='w', complevel=5, complib='zlib') as store:
     # Write each DataFrame to the file with a unique key
     store.put('data', data, format='table')
     store.put('data_properties', data_properties, format='table')
+    store.put('grouped_noise', grouped_noise, format='table')
