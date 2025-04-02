@@ -29,18 +29,18 @@ data = pd.read_hdf(filename, "data")
 
 
 if (RUN_NUMBER == 14180):
-    mean_lt = 43000.0 # mus
+    mean_lt = 38000.0 # mus
     trig_time = 1009
     cathode_time = 803
-    PE_to_MeV = 4.1107552268907513e-07
+    PE_to_MeV = 7.6505151395e-04
     max_lifetime = 100e3
     bin_range = 4000
 
 elif (RUN_NUMBER == 13850):
-    mean_lt = 44000.0 # mus
+    mean_lt = 31000.0 # mus
     trig_time = 1009
     cathode_time = 801
-    PE_to_MeV = 4.380634467274111e-07
+    PE_to_MeV = 8.0533004732e-04
     max_lifetime = 100e3
     bin_range = 4000
 
@@ -53,18 +53,18 @@ elif (RUN_NUMBER == 13859):
     bin_range = 25000
 
 elif (RUN_NUMBER == 14498):
-    mean_lt = 45000.0 # mus
+    mean_lt = 43000.0 # mus
     trig_time = 1610
     cathode_time = 1500
-    PE_to_MeV = 3.139451326134709e-07
+    PE_to_MeV = 4.3763144213e-04
     max_lifetime = 100e3
     bin_range = 500
 
 elif (RUN_NUMBER == 14780):
-    mean_lt = 60000.0 # mus
+    mean_lt = 63000.0 # mus
     trig_time = 1610
     cathode_time = 1500
-    PE_to_MeV = 3.0007670255073243e-07
+    PE_to_MeV = 2.4326013304e-04
     max_lifetime = 200e3
     bin_range = 500
 
@@ -76,6 +76,7 @@ data["pe_intC"]   = data.apply(lambda row: CorrectLifetimeAvg(row, "pe_int", "pe
 
 # Convert from PE to eV
 data["pe_intC"] = data["pe_intC"]*PE_to_MeV*1e6
+data["pe_int"]  = data["pe_int"]*PE_to_MeV*1e6
 
 print(data)
 
@@ -84,7 +85,7 @@ print(data)
 # Load the data
 data_properties_lt = pd.read_hdf(f"/home/argon/Projects/Krishan/DoubleBeta/Alphas/CalibratedProperties/Properties_Run_{RUN_NUMBER}.h5", "data_properties_lt")
 
-bins = np.arange(50, 750, 50)
+bins = np.arange(50, 750, 25)
 bin_centers = (bins[:-1] + bins[1:]) / 2
 
 total_hist = None
@@ -111,7 +112,7 @@ for index, evt in enumerate(data.event.unique()):
     grass_peaks = S2_pulse.grass_peaks.item()
     event = data[data.event == evt]
 
-    if (S2_area < 0.5):
+    if (S2_area < 3000):
         continue
 
     if (grass_peaks >0):
