@@ -109,17 +109,17 @@ for index, evt in enumerate(data.event.unique()):
     print(f"Event: {index}, {evt}")
 
     S2_pulse = data_properties_lt[data_properties_lt['event'] == evt]
-    S2_pulse["R"] = np.sqrt(S2_pulse["x"]*S2_pulse["x"] + S2_pulse["y"]*S2_pulse["y"])
-
-    if (len(S2_pulse) ==0):
-        print("Skipping event due to no S2")
-        continue
+    S2_pulse.loc[:, "R"] = np.sqrt(S2_pulse["x"]**2 + S2_pulse["y"]**2)
 
     S2_area = S2_pulse.S2_areaC.item()
     grass_peaks = S2_pulse.grass_peaks.item()
     event = data[data.event == evt]
 
-    if (S2_area < S2_area_cut):
+    if (len(S2_pulse) ==0):
+        print("Skipping event due to no S2")
+        continue
+
+    if (S2_area <= S2_area_cut):
         print("Skipping event due to below threshold S2", S2_area)
         continue
 
@@ -151,7 +151,7 @@ for index, evt in enumerate(data.event.unique()):
     bin_ids.append( S2_pulse.bin_id.item())
     Radii.append(S2_pulse.R.item())# Radial pos of the S2 event 
 
-    histogram1D_df.append(pd.DataFrame({"event":evt, "counts":counts, "centers":bin_centers)})
+    histogram1D_df.append(pd.DataFrame({"event":evt, "counts":counts, "centers":bin_centers}))
 
 
 histogram_df = pd.DataFrame({"event":events,"S2_areas":S2_areas,"tail_energy": tail_energy, "x_binc": x_binc, "y_binc" : y_binc, "bin_id" : bin_ids,"R": Radii} )
