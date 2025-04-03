@@ -111,13 +111,13 @@ for index, evt in enumerate(data.event.unique()):
     S2_pulse = data_properties_lt[data_properties_lt['event'] == evt]
     S2_pulse.loc[:, "R"] = np.sqrt(S2_pulse["x"]**2 + S2_pulse["y"]**2)
 
-    S2_area = S2_pulse.S2_areaC.item()
-    grass_peaks = S2_pulse.grass_peaks.item()
-    event = data[data.event == evt]
-
     if (len(S2_pulse) ==0):
         print("Skipping event due to no S2")
         continue
+
+    S2_area = S2_pulse.S2_areaC.item()
+    grass_peaks = S2_pulse.grass_peaks.item()
+    event = data[data.event == evt]
 
     if (S2_area <= S2_area_cut):
         print("Skipping event due to below threshold S2", S2_area)
