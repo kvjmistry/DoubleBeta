@@ -112,6 +112,7 @@ for index, evt in enumerate(data.event.unique()):
     S2_pulse["R"] = np.sqrt(S2_pulse["x"]*S2_pulse["x"] + S2_pulse["y"]*S2_pulse["y"])
 
     if (len(S2_pulse) ==0):
+        print("Skipping event due to no S2")
         continue
 
     S2_area = S2_pulse.S2_areaC.item()
@@ -119,9 +120,11 @@ for index, evt in enumerate(data.event.unique()):
     event = data[data.event == evt]
 
     if (S2_area < S2_area_cut):
+        print("Skipping event due to below threshold S2", S2_area)
         continue
 
     if (grass_peaks >0):
+        print("Skipping event due to grass peaks", grass_peaks)
         continue
 
     # Clean up events where the noise subtraction is too large
@@ -131,7 +134,7 @@ for index, evt in enumerate(data.event.unique()):
     counts, edges = np.histogram(event.peak_time, weights=(event.pe_int - 25*event.bkg/event.timewin)/S2_area, bins = bins )
 
     # hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, np.linspace(0, bin_range, 50)])
-    hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, 50)
+    hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, 50])
     
     # masked_hist=hist2D
 
