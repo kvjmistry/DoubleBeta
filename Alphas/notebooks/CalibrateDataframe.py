@@ -154,7 +154,7 @@ for index, evt in enumerate(data.event.unique()):
     histogram1D_df.append(pd.DataFrame({"event":evt, "counts":counts, "centers":bin_centers))
 
 
-histogram_df = pd.DataFrame({"event":events,"S2_areas":S2_areas,"tail_energy": tail_energy, "x_binc": x_binc, "y_binc" : y_binc, "bin_id" : bin_ids,"R": Radii}} )
+histogram_df = pd.DataFrame({"event":events,"S2_areas":S2_areas,"tail_energy": tail_energy, "x_binc": x_binc, "y_binc" : y_binc, "bin_id" : bin_ids,"R": Radii} )
 print(histogram_df)
 
 histogram1D_df = pd.concat(histogram1D_df, ignore_index=True)
