@@ -13,10 +13,10 @@ start=`date +%s`
 echo "Setting up IC"
 source /home/argon/Projects/Krishan/IC/setup_IC.sh
 
-RUN_NUMBER=13850 # 326
-# RUN_NUMBER=14180 # 644
-# RUN_NUMBER=14498 # 343
-# RUN_NUMBER=14780 # 568%15
+RUN_NUMBER=13850 # 314
+# RUN_NUMBER=14180 # 629
+# RUN_NUMBER=14498 # 343 -- needs rerun
+# RUN_NUMBER=14780 # 548
 
 mkdir -p /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filteredC/${RUN_NUMBER}/
 cd       /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filteredC/${RUN_NUMBER}/
