@@ -20,7 +20,7 @@ mode="filt"
 if mode == "filt":
     print("Combining Data Properties")
     directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filtered/{RUN_NUMBER}/"
-    outfile=f"Run_{RUN_NUMBER}_Filtered.h5"
+    outfile=f"files/Run_{RUN_NUMBER}_Filtered.h5"
     
     file_paths = glob.glob(os.path.join(directory_path, '*.h5'))
     print(len(file_paths))
@@ -42,7 +42,7 @@ if mode == "filt":
 elif (mode == "data"):
     print("Combining Data Table")
     directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"
-    outfile=f"Run_{RUN_NUMBER}_FilteredC.h5"
+    outfile=f"files/Run_{RUN_NUMBER}_FilteredC.h5"
     
     file_paths = glob.glob(os.path.join(directory_path, '*.h5'))
     print(len(file_paths))
@@ -65,7 +65,7 @@ elif (mode == "data"):
 elif (mode == "sipm"):
     print("Combining sipm Table")
     directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/sipm_baselines/{RUN_NUMBER}/"
-    outfile=f"Run_{RUN_NUMBER}_SiPM.h5"
+    outfile=f"files/Run_{RUN_NUMBER}_SiPM.h5"
     
     file_paths = glob.glob(os.path.join(directory_path, '*.h5'))
     print(len(file_paths))
@@ -86,7 +86,7 @@ elif (mode == "sipm"):
 
 else:
     directory_path = f"/media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/filteredC/{RUN_NUMBER}/"
-    outfilehist=f"Run_{RUN_NUMBER}_Histograms.pkl"
+    outfilehist=f"files/Run_{RUN_NUMBER}_Histograms.pkl"
     
     file_paths = glob.glob(os.path.join(directory_path, '*.pkl'))
     print(len(file_paths))
