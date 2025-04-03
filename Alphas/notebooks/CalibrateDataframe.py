@@ -34,7 +34,7 @@ if (RUN_NUMBER == 14180):
     PE_to_MeV    = 7.6066133656e-04
     max_lifetime = 100e3
     bin_range    = 4000
-    S2_area_cut  = 3000 # values less than this are cut
+    S2_area_cut  = 0 # values less than this are cut
 
 elif (RUN_NUMBER == 13850):
     mean_lt      = 31000.0 # mus
@@ -43,7 +43,7 @@ elif (RUN_NUMBER == 13850):
     PE_to_MeV    = 8.0892055566e-04
     max_lifetime = 100e3
     bin_range    = 4000
-    S2_area_cut  = 3000
+    S2_area_cut  = 0
 
 elif (RUN_NUMBER == 13859):
     mean_lt      = 5800.0 # mus
@@ -52,7 +52,7 @@ elif (RUN_NUMBER == 13859):
     PE_to_MeV    = 5.80816646495761e-07
     max_lifetime = 100e3
     bin_range    = 25000
-    S2_area_cut  = 3000
+    S2_area_cut  = 0
 
 elif (RUN_NUMBER == 14498):
     mean_lt      = 42700.0 # mus
@@ -61,7 +61,7 @@ elif (RUN_NUMBER == 14498):
     PE_to_MeV    = 4.3611124881e-04
     max_lifetime = 100e3
     bin_range    = 500
-    S2_area_cut  = 3000
+    S2_area_cut  = 0
 
 elif (RUN_NUMBER == 14780):
     mean_lt      = 65000.0 # mus
@@ -70,7 +70,7 @@ elif (RUN_NUMBER == 14780):
     PE_to_MeV    = 2.4112753422e-04
     max_lifetime = 200e3
     bin_range    = 500
-    S2_area_cut  = 9000 
+    S2_area_cut  = 0
 
 else:
     print("Error run config is not set")
