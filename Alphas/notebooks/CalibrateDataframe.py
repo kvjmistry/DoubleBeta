@@ -28,49 +28,49 @@ print("RUN is", RUN_NUMBER, " file is", base_name)
 data = pd.read_hdf(filename, "data")
 
 if (RUN_NUMBER == 14180):
-    mean_lt = 38000.0 # mus
-    trig_time = 1009
+    mean_lt      = 38500.0 # mus
+    trig_time    = 1009
     cathode_time = 803
-    PE_to_MeV = 7.6505151395e-04
+    PE_to_MeV    = 7.6066133656e-04
     max_lifetime = 100e3
-    bin_range = 4000
-    S2_area_cut = 3000 # values less than this are cut
+    bin_range    = 4000
+    S2_area_cut  = 3000 # values less than this are cut
 
 elif (RUN_NUMBER == 13850):
-    mean_lt = 31000.0 # mus
-    trig_time = 1009
+    mean_lt      = 31000.0 # mus
+    trig_time    = 1009
     cathode_time = 801
-    PE_to_MeV = 8.0533004732e-04
+    PE_to_MeV    = 8.0892055566e-04
     max_lifetime = 100e3
-    bin_range = 4000
-    S2_area_cut = 3000
+    bin_range    = 4000
+    S2_area_cut  = 3000
 
 elif (RUN_NUMBER == 13859):
-    mean_lt = 5800.0 # mus
-    trig_time = 1009
+    mean_lt      = 5800.0 # mus
+    trig_time    = 1009
     cathode_time = 760
-    PE_to_MeV = 5.80816646495761e-07
+    PE_to_MeV    = 5.80816646495761e-07
     max_lifetime = 100e3
-    bin_range = 25000
-    S2_area_cut = 3000
+    bin_range    = 25000
+    S2_area_cut  = 3000
 
 elif (RUN_NUMBER == 14498):
-    mean_lt = 43000.0 # mus
-    trig_time = 1610
+    mean_lt      = 42700.0 # mus
+    trig_time    = 1610
     cathode_time = 1500
-    PE_to_MeV = 4.3763144213e-04
+    PE_to_MeV    = 4.3611124881e-04
     max_lifetime = 100e3
-    bin_range = 500
-    S2_area_cut = 3000
+    bin_range    = 500
+    S2_area_cut  = 3000
 
 elif (RUN_NUMBER == 14780):
-    mean_lt = 63000.0 # mus
-    trig_time = 1610
+    mean_lt      = 65000.0 # mus
+    trig_time    = 1610
     cathode_time = 1500
-    PE_to_MeV = 2.4326013304e-04
+    PE_to_MeV    = 2.4112753422e-04
     max_lifetime = 200e3
-    bin_range = 500
-    S2_area_cut = 9000 
+    bin_range    = 500
+    S2_area_cut  = 9000 
 
 else:
     print("Error run config is not set")
@@ -81,9 +81,6 @@ data["pe_intC"]   = data.apply(lambda row: CorrectLifetimeAvg(row, "pe_int", "pe
 # Convert from PE to eV
 data["pe_intC"] = data["pe_intC"]*PE_to_MeV*1e6
 data["pe_int"]  = data["pe_int"]*PE_to_MeV*1e6
-
-
-data = data.merge(grouped_noise, on='event', how='left')
 
 print(data)
 
@@ -127,9 +124,14 @@ for index, evt in enumerate(data.event.unique()):
     if (grass_peaks >0):
         continue
 
-    counts, edges = np.histogram(event.peak_time, weights=(event.pe_int - event.bkg)/S2_area, bins = bins )
+    # Clean up events where the noise subtraction is too large
+    # if (event.bkg.iloc[0] > 1):
+    #     continue
 
-    hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, np.linspace(0, bin_range, 50)])
+    counts, edges = np.histogram(event.peak_time, weights=(event.pe_int - 25*event.bkg/event.timewin)/S2_area, bins = bins )
+
+    # hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, np.linspace(0, bin_range, 50)])
+    hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, 50)
     
     # masked_hist=hist2D
 
