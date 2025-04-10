@@ -394,6 +394,12 @@ with tb.open_file(filename) as file:
         cath_time = cath_df.peak_time.mean()
         cath_std  = cath_df.peak_time.std()
 
+        # This estimates the background to the cathode photoelectric events due to the tails
+        cath_bkg_win = cath_lim[0]- 5 - (cath_lim[1]-cath_lim[0]), cath_lim[0]-5
+        cath_df_bkg = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, cath_bkg_win)
+        cath_df_bkg = pd.concat(cath_df_bkg, ignore_index=True)
+        cath_bkg = cath_df_bkg.pe_int.sum()*tc
+
         try:
             FWHM, S2_amplitude = find_fwhm(times[int(S2_start/tc):int(S2_end/tc)], 
                                         wfs_sum[int(S2_start/tc):int(S2_end/tc)])
@@ -409,7 +415,7 @@ with tb.open_file(filename) as file:
             print("Error on FWHM calculation, skipping")
             continue # Continue without interruption
 
-        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area, S2_areafit=area, S2_time = mu, cath_area=cath_area, cath_time=cath_time, cath_std=cath_std, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos, grass_peaks = len(grass_peaks), nS1 = len(S1), mean_interp_amp= mean_interp_amp, std_interp_amp=std_interp_amp), index=[0]))
+        data_properties.append(pd.DataFrame(dict(event = evt_info[evt_no][0], S2_area=S2_area, S2_areafit=area, S2_time = mu, cath_area=cath_area, cath_time=cath_time, cath_std=cath_std, cath_bkg=cath_bkg, ts_raw=ts/1e3, deltaT=deltaT, sigma = FWHM/2.355, S2_amp=S2_amplitude, x = x_pos, y = y_pos, grass_peaks = len(grass_peaks), nS1 = len(S1), mean_interp_amp= mean_interp_amp, std_interp_amp=std_interp_amp), index=[0]))
 
         # Check the baseline, if we got something really negative
         # then the deconvolution likely failed, so skip grass calculation
