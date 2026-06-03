@@ -81,6 +81,7 @@ data["pe_intC"]   = data.apply(lambda row: CorrectLifetimeAvg(row, "pe_int", "pe
 # Convert from PE to eV
 data["pe_intC"] = data["pe_intC"]*PE_to_MeV*1e6
 data["pe_int"]  = data["pe_int"]*PE_to_MeV*1e6
+data["bkgC"]     = 25*(data["bkg"]/data["timewin"])*PE_to_MeV*1e6
 
 print(data)
 
@@ -128,13 +129,17 @@ for index, evt in enumerate(data.event.unique()):
         continue
 
     # Clean up events where the noise subtraction is too large
-    # if (event.bkg.iloc[0] > 1):
-    #     continue
+    if (event.bkg.iloc[0] > 1):
+        continue
 
-    counts, edges = np.histogram(event.peak_time, weights=(event.pe_int - 25*event.bkg/event.timewin)/S2_area, bins = bins )
 
-    # hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, np.linspace(0, bin_range, 50)])
-    hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, 50])
+    counts, edges = np.histogram(event.peak_time, weights=event.pe_int/S2_area, bins = bins )
+    counts = np.array(counts)
+    counts = counts - np.ones_like(counts)*event.bkgC.iloc[0]/S2_area
+    #counts, edges = np.histogram(event.peak_time,weights=(event.pe_int/S2_area), bins = bins )
+
+    hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, np.linspace(0, bin_range, 50)])
+    #hist2D, xedges, yedges = np.histogram2d(bin_centers, counts, bins=[bins, 50])
     
     # masked_hist=hist2D
 
