@@ -74,18 +74,14 @@ def process_voxel_event(event_df, voxel_size):
         'y': y_int,
         'x': x_int,
         'energy': event_df['energy'].values.astype(np.float32),
-        'group_id': event_df['group_id'].values,
+        # 'group_id': event_df['group_id'].values,
         'Type': event_df['Type'].values,
         'subType': event_df['subType'].values,
         'label': event_df['label'].values
     })
     
-    voxel_event = group_df.groupby(['group_id', 'event_id', 'z', 'y', 'x'], as_index=False, sort=False).agg({
-        'energy': 'sum',
-        'Type': 'first',
-        'subType': 'first',
-        'label': 'first'
-    })
+    # voxel_event = group_df.groupby(['group_id', 'event_id', 'z', 'y', 'x'], as_index=False, sort=False).agg({'energy': 'sum','Type': 'first','subType': 'first','label': 'first'})
+    voxel_event = group_df.groupby(['event_id', 'z', 'y', 'x'], as_index=False, sort=False).agg({'energy': 'sum','Type': 'first','subType': 'first','label': 'first'})
 
     
     return voxel_event
@@ -117,18 +113,14 @@ def voxelize_event(event_df, VOXEL_SIZE):
         'y': y_int,
         'x': x_int,
         'energy': event_df['energy'].values.astype(np.float32),
-        'group_id': event_df['group_id'].values,
+        # 'group_id': event_df['group_id'].values,
         'Type': event_df['Type'].values,
         'subType': event_df['subType'].values,
         'label': event_df['label'].values
     })
     
-    voxel_df = group_df.groupby(['group_id', 'event_id', 'z', 'y', 'x'], as_index=False, sort=False).agg({
-        'energy': 'sum',
-        'Type': 'first',
-        'subType': 'first',
-        'label': 'first'
-    })
+    # voxel_df = group_df.groupby(['group_id', 'event_id', 'z', 'y', 'x'], as_index=False, sort=False).agg({'energy': 'sum','Type': 'first','subType': 'first','label': 'first'})
+    voxel_df = group_df.groupby(['event_id', 'z', 'y', 'x'], as_index=False, sort=False).agg({'energy': 'sum','Type': 'first','subType': 'first','label': 'first'})
 
     return voxel_df
 # ------------------------------------------------------------------------------
@@ -178,8 +170,8 @@ def ApplyScaling(df):
     # df = MinMaxScale(df, "energy", 0, 0.008)
 
     # For energy, divide by the hits total event energy
-    df_energy = df.groupby(["event", "Type"])["energy"].sum().reset_index(name="total_energy")
-    df = df.merge(df_energy[["event", "total_energy"]], on="event")
+    df_energy = df.groupby(["event_id", "Type"])["energy"].sum().reset_index(name="total_energy")
+    df = df.merge(df_energy[["event_id", "total_energy"]], on="event_id")
     df["energy"] = df["energy"]/df["total_energy"]
     df = df[["event_id", "x", "y", "z", "energy", "Type", "subType"]]
 
@@ -300,6 +292,13 @@ VOXEL_SIZE=20.0
 
 # The job id
 
+# To run python Convert_to_CNNpt.py [jobid] [splitsize]
+# Splitsize is the amount of chunks you want to split the data into
+# jobid goes from 1..splitsize
+# python Convert_to_CNNpt.py 1 30
+# python Convert_to_CNNpt.py 2 30
+# python Convert_to_CNNpt.py 3 30
+
 # Job id needs to range from 1 to splitsize
 jobid = int(sys.argv[1])
 splitsize=int(sys.argv[2])
@@ -347,6 +346,12 @@ df = VoxelizeEventParallel(df, VOXEL_SIZE)
 
 # print("Making Global Group IDs")
 # df = MakeGlobalGroupIDs(df)
+
+# Clean the df of events with a nan
+has_nan = df.isna().any(axis=1)
+id_has_nan = has_nan.groupby(df["event_id"]).transform("any")
+df= df[~id_has_nan]
+
 print(df)
 
 # Event-level labels
