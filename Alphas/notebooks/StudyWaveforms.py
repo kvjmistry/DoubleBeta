@@ -488,8 +488,8 @@ with tb.open_file(filename) as file:
 
 # data = data.merge(grouped_noise, on='event', how='left')
 # data_properties = data_properties.merge(grouped_noise, on='event', how='left')
-data["bkg"]            = data["bkg"].fillna(0)
-data_properties["bkg"] = data_properties["bkg"].fillna(0)
+# data["bkg"]            = data["bkg"].fillna(0)
+# data_properties["bkg"] = data_properties["bkg"].fillna(0)
 
 print(data_properties)
 print(data)
