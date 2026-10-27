@@ -310,7 +310,7 @@ elif (RUN_NUMBER == 16156):
     cath_lim    = 2500, 2600
     S1_window   = 100, 1585
     S2_window   = 1585, 1800
-    dead_pmts = [39, 46] 
+    dead_pmts = [39, 36, 42, 46] 
 
 elif (RUN_NUMBER == 16167): 
     grass_lim   = 1650, 3000
@@ -323,7 +323,7 @@ elif (RUN_NUMBER == 16167):
     cath_lim    = 2500, 2600
     S1_window   = 100, 1585
     S2_window   = 1585, 1800
-    dead_pmts = [39, 46] 
+    dead_pmts = [39, 36, 42, 46] 
 
 else:
     print("No run found, using run 13859 values...")
