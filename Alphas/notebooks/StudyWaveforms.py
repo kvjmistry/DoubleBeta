@@ -221,7 +221,7 @@ RUN_NUMBER= int(sys.argv[2])
 base_name = os.path.basename(filename)  # Extracts 'run_13852_0000_ldc1_trg0.waveforms.h5'
 outfilename = base_name.replace(".waveforms", "_filtered")
 
-useRaw = False
+useRaw = False # dont really do the analysis with raw waveforms anymore
 mask=False
 
 thr_split   = 2      # maximum number of samples allowed to be below threshold to consider it a peak
@@ -233,6 +233,7 @@ noise_sigma = 4      # how many STD above noise for the single PEs to be
 
 dead_pmts = []
 
+# Configure the runs
 if (RUN_NUMBER == 13850):
     grass_lim   = 1050, 1770 # time window in mus in which to search for single pes
     noise_lim   = 0, 90      # time window to calculate the noise baseline
@@ -338,7 +339,7 @@ else:
     S2_window   = 985, 1200  
     dead_pmts = [3, 16, 24, 36, 37, 38, 39,40, 41, 48, 53, 58]
 
-
+# Deconvolution function
 deconv = deconv_pmt("next100", RUN_NUMBER, 62400, mask=mask)
 
 # Load in the database for SiPMs
@@ -482,16 +483,17 @@ with tb.open_file(filename) as file:
     data_properties = data_properties.assign(ts = np.array(list(map(datetime.fromtimestamp, data_properties.ts_raw))))
 
 # Merge the noise
-grouped_noise = noise_df.groupby(['event','timewin'])['pe_int'].sum().reset_index()
-grouped_noise = grouped_noise.rename(columns={'pe_int': 'bkg'})
+# grouped_noise = noise_df.groupby(['event','timewin'])['pe_int'].sum().reset_index()
+# grouped_noise = grouped_noise.rename(columns={'pe_int': 'bkg'})
 
-data = data.merge(grouped_noise, on='event', how='left')
-data_properties = data_properties.merge(grouped_noise, on='event', how='left')
+# data = data.merge(grouped_noise, on='event', how='left')
+# data_properties = data_properties.merge(grouped_noise, on='event', how='left')
 data["bkg"]            = data["bkg"].fillna(0)
 data_properties["bkg"] = data_properties["bkg"].fillna(0)
 
 print(data_properties)
 print(data)
+print(noise_df)
 
 outdir = f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filtered/{RUN_NUMBER}/"
 os.makedirs(outdir, exist_ok=True)
@@ -500,3 +502,4 @@ with pd.HDFStore(outdir + outfilename, mode='w', complevel=5, complib='zlib') as
     # Write each DataFrame to the file with a unique key
     store.put('data', data, format='table')
     store.put('data_properties', data_properties, format='table')
+    store.put('noise_df', noise_df, format='table')
