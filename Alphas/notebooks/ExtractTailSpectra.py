@@ -74,55 +74,6 @@ def get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, hal
     return pd.DataFrame(rows, columns=["event", "ts_raw", "pmt", "pe_int", "peak_time", "noise_thr"])
 
 
-def CorrectRawBaseline(wfs):
-
-    corrected_waveforms = []
-
-    for wfm in wfs:
-        num_samples = int(25/tc)
-        baseline1=np.mean(wfm[-num_samples:])
-        baseline2=np.mean(wfm[0:int(25/tc)])
-        wfm = -1*(wfm-baseline2)
-        corrected_waveforms.append(wfm)
-
-    return np.array(corrected_waveforms)
-
-# Correct the SiPM baselines
-def CorrectSiPMBaseline(wfs, method="median"):
-    wfs = wfs.astype(np.float32)          # raw data is int16, avoid overflow
-
-    baseline_win = 500
-
-    if method == "median":
-        bl = np.median(wfs[:, :baseline_win], axis=1, keepdims=True)
-    else:                                 # mean of a pre trigger window
-        n  = int(baseline_win)            # 500 µs at 1 µs sampling
-        bl = wfs[:, :n].mean(axis=1, keepdims=True)
-
-    return wfs - bl
-
-
-def find_fwhm(time, amplitude):
-    max_amplitude = np.max(amplitude)
-    half_max = max_amplitude / 2
-
-    # Find indices where amplitude crosses half-maximum level
-    above_half_max = np.where(amplitude >= half_max)[0]
-
-    # First crossing point
-    left_idx = above_half_max[0]
-    right_idx = above_half_max[-1]
-
-    if left_idx == 0 or right_idx == len(amplitude) - 1:
-        raise ValueError("S2 pulse not fully contained in window")
-
-    # Interpolate to get more accurate crossing times
-    t_left  = np.interp(half_max, [amplitude[left_idx-1], amplitude[left_idx]],  [time[left_idx-1], time[left_idx]])
-    t_right = np.interp(half_max, [amplitude[right_idx+1], amplitude[right_idx]], [time[right_idx+1], time[right_idx]])
-
-    fwhm = t_right - t_left
-    return fwhm, max_amplitude
-
 def ADC_to_PE(wfs, datapmt):
     conv_factors = datapmt.adc_to_pes.to_numpy()
 
@@ -160,7 +111,6 @@ def GetBaselineInterp(times, wfs):
 
     return interps
 
-
 # Uses the interpolation in a range to fix the baseline
 def CorrectDeconvBaseline(t_pmt, tmin, tmax, interps, wfs):
     
@@ -175,30 +125,6 @@ def CorrectDeconvBaseline(t_pmt, tmin, tmax, interps, wfs):
 
     return wfs
 
-
-# Fit the distribution 
-def Gaussian(x, A, mu, sigma):
-    return A * np.exp(-(x-mu)*(x-mu)/(2*sigma*sigma))
-
-def FitS2(time, amplitude):
-    max_amplitude = np.max(amplitude)
-    half_max = max_amplitude / 2
-
-    # Find indices where amplitude crosses half-maximum level
-    above_half_max = np.where(amplitude >= half_max)[0]
-
-    time_slice = time[above_half_max]
-
-    p0 = [np.clip(max_amplitude, 1, 1e6), time[np.argmax(amplitude)], np.clip((time_slice[-1] - time_slice[0]) / 2.355, 1, 100)]
-
-    # Perform the curve fit
-    params, covariance = curve_fit(Gaussian, time[above_half_max], amplitude[above_half_max], p0=p0, bounds = ([1, min(time_slice),1], [1e6, max(time_slice),100]))
-
-    # Extract the fitted parameters
-    A, mu, sigma = params
-
-    return A, mu, sigma
-
 # Function to get the mean and standard deviation of the baseline correction at grass lim start
 def GetInterpParams(interps, grass_lim):
     interp_amp = np.array([])
@@ -209,11 +135,6 @@ def GetInterpParams(interps, grass_lim):
     std_interp_amp = np.std(interp_amp)
 
     return mean_interp_amp, std_interp_amp
-
-# Rebin a waveform
-def rebin_array(arr, bin_size):
-    new_len = len(arr) // bin_size  # Ensure integer division
-    return np.mean(arr[:new_len * bin_size].reshape(new_len, bin_size), axis=1)
 
 
 filename  = sys.argv[1]
