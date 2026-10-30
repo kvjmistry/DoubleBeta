@@ -1,0 +1,363 @@
+from invisible_cities.cities.components import deconv_pmt
+from invisible_cities.core.core_functions import in_range
+from invisible_cities.database  import load_db
+import pandas as pd
+import numpy as np
+import tables as tb
+import os
+from scipy.signal import find_peaks
+import sys
+from datetime import datetime
+from scipy.interpolate import interp1d
+from scipy.optimize import curve_fit
+from scipy.stats import trim_mean
+
+def sum_wf(wfs):
+    element_wise_sum = np.zeros_like(wfs[0])
+
+    # Sum the arrays element-wise
+    for array in wfs:
+        element_wise_sum += array
+
+    return element_wise_sum
+
+
+def check_summed_baseline(wfs_sum, grass_lim, S1_height):
+
+    flag=False
+    tc=25e-3
+    
+    # Check the baseline at the end and start match
+    # otherwise there could be signal there so the baseline is all messed up
+    num_samples = int(25/tc)
+    baseline1=np.mean(wfs_sum[-num_samples:])
+    baseline2=np.mean(wfs_sum[0:int(25/tc)])
+
+    # Check if the baseline varies by more than 0.2 PE
+    if (abs(baseline1-baseline2) > 0.2):
+        print("Error in baselines at start and end, dropping event")
+        print(baseline1-baseline2)
+        flag = True
+
+    # Look in the window for large peaks that could be other S1/S2 pulses. 
+    # This will mess up the reconstruction
+    peaks, _ = find_peaks(wfs_sum[ int(grass_lim[0]/tc):int(grass_lim[1]/tc)], height=S1_height, distance=30/tc)
+
+    bin_fact=100 # rebin amount
+    wfs_sum_binned = rebin_array(wfs_sum, bin_fact)
+    peaks_rebin, _ = find_peaks(wfs_sum_binned[ int(grass_lim[0]/(tc*bin_fact)):int(grass_lim[1]/(tc*bin_fact))], height=0.6)
+    peaks_rebin = peaks_rebin*bin_fact
+
+    peaks_filt = np.append(peaks, peaks_rebin)
+
+    return flag, peaks_filt
+
+def get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, window, event, ts, tc):
+
+    rows = []
+
+    tsel_     = in_range(times, *window)
+    wfs = wfs[:, tsel_]
+
+    for pmt_no, wf in enumerate(wfs):
+
+        idx_over_thr = np.argwhere(wf > noise[pmt_no]).flatten() # Find the indices where the waveform is above the noise threshold
+        splits       = np.argwhere(np.diff(idx_over_thr) > thr_split).flatten() # Find the indices where the difference between consecutive indices is greater than thr_split
+        idx_slices   = np.split(idx_over_thr, splits+1) # Split the indices into slices based on the splits
+        idx_slices   = list(filter(lambda sl: in_range(len(sl), peak_minlen, peak_maxlen + .5), idx_slices)) # Filter the slices to keep only those with length between peak_minlen and peak_maxlen
+
+        for sl in idx_slices:
+            m = np.argmax(wf[sl]) + sl[0] # Find the index of the maximum value in the slice and add the starting index of the slice to get the index in the original waveform
+            pe_int = wf[max(m-half_window, 0):m+half_window].sum()*tc
+            rows.append(dict(event = event, ts_raw=ts/1e3, pmt=pmt_no, pe_int=pe_int, peak_time=m*tc+window[0], noise_thr=noise[pmt_no]))
+
+    return pd.DataFrame(rows, columns=["event", "ts_raw", "pmt", "pe_int", "peak_time", "noise_thr"])
+
+
+def CorrectRawBaseline(wfs):
+
+    corrected_waveforms = []
+
+    for wfm in wfs:
+        num_samples = int(25/tc)
+        baseline1=np.mean(wfm[-num_samples:])
+        baseline2=np.mean(wfm[0:int(25/tc)])
+        wfm = -1*(wfm-baseline2)
+        corrected_waveforms.append(wfm)
+
+    return np.array(corrected_waveforms)
+
+# Correct the SiPM baselines
+def CorrectSiPMBaseline(wfs, method="median"):
+    wfs = wfs.astype(np.float32)          # raw data is int16, avoid overflow
+
+    baseline_win = 500
+
+    if method == "median":
+        bl = np.median(wfs[:, :baseline_win], axis=1, keepdims=True)
+    else:                                 # mean of a pre trigger window
+        n  = int(baseline_win)            # 500 µs at 1 µs sampling
+        bl = wfs[:, :n].mean(axis=1, keepdims=True)
+
+    return wfs - bl
+
+
+def find_fwhm(time, amplitude):
+    max_amplitude = np.max(amplitude)
+    half_max = max_amplitude / 2
+
+    # Find indices where amplitude crosses half-maximum level
+    above_half_max = np.where(amplitude >= half_max)[0]
+
+    # First crossing point
+    left_idx = above_half_max[0]
+    right_idx = above_half_max[-1]
+
+    if left_idx == 0 or right_idx == len(amplitude) - 1:
+        raise ValueError("S2 pulse not fully contained in window")
+
+    # Interpolate to get more accurate crossing times
+    t_left  = np.interp(half_max, [amplitude[left_idx-1], amplitude[left_idx]],  [time[left_idx-1], time[left_idx]])
+    t_right = np.interp(half_max, [amplitude[right_idx+1], amplitude[right_idx]], [time[right_idx+1], time[right_idx]])
+
+    fwhm = t_right - t_left
+    return fwhm, max_amplitude
+
+def ADC_to_PE(wfs, datapmt):
+    conv_factors = datapmt.adc_to_pes.to_numpy()
+
+    for w in range(0, len(wfs)):
+        if (conv_factors[w] == 1e5):
+             wfs[w] = wfs[w]*0
+        elif (conv_factors[w] == 0):
+            wfs[w] = wfs[w]*0
+        else:
+            wfs[w] = wfs[w]/conv_factors[w]
+
+    return wfs
+
+# Get interpolation of the background noise just after the S2
+def GetBaselineInterp(times, wfs):
+
+    interps = []
+    for pmt_no, wf in enumerate(wfs):
+
+        # Apply trimmed mean over a sliding window
+        window_size = 100  # Adjust as needed
+        trim_ratio = 0.4  # Trim 40% from each side
+
+        trimmed_wfm = np.array([
+            trim_mean(wf[i:i+window_size], proportiontocut=trim_ratio) 
+            for i in range(0, len(wf), window_size)
+        ])
+
+        # Downsample the time array to match the trimmed values
+        trimmed_times = times[::window_size] + window_size*tc/2
+
+        # Interpolate the smoothed data
+        interp_func = interp1d(trimmed_times, trimmed_wfm, kind='cubic', bounds_error=False, fill_value=0)  # Cubic interpolation for smoothness
+        interps.append(interp_func)
+
+    return interps
+
+
+# Uses the interpolation in a range to fix the baseline
+def CorrectDeconvBaseline(t_pmt, tmin, tmax, interps, wfs):
+    
+    for pmt_no, wf in enumerate(wfs):
+        # Apply the interpolation function to waveform time points
+        amplitude_interpolated = interps[pmt_no](t_pmt)
+        mask = (t_pmt < tmin) | (t_pmt > tmax)
+        amplitude_interpolated[mask] = 0
+
+        # Subtract the interpolated amplitude from the waveform amplitude
+        wfs[pmt_no] = wf - amplitude_interpolated
+
+    return wfs
+
+
+# Fit the distribution 
+def Gaussian(x, A, mu, sigma):
+    return A * np.exp(-(x-mu)*(x-mu)/(2*sigma*sigma))
+
+def FitS2(time, amplitude):
+    max_amplitude = np.max(amplitude)
+    half_max = max_amplitude / 2
+
+    # Find indices where amplitude crosses half-maximum level
+    above_half_max = np.where(amplitude >= half_max)[0]
+
+    time_slice = time[above_half_max]
+
+    p0 = [np.clip(max_amplitude, 1, 1e6), time[np.argmax(amplitude)], np.clip((time_slice[-1] - time_slice[0]) / 2.355, 1, 100)]
+
+    # Perform the curve fit
+    params, covariance = curve_fit(Gaussian, time[above_half_max], amplitude[above_half_max], p0=p0, bounds = ([1, min(time_slice),1], [1e6, max(time_slice),100]))
+
+    # Extract the fitted parameters
+    A, mu, sigma = params
+
+    return A, mu, sigma
+
+# Function to get the mean and standard deviation of the baseline correction at grass lim start
+def GetInterpParams(interps, grass_lim):
+    interp_amp = np.array([])
+    for interp in interps:
+        interp_amp = np.append(interp_amp, interp(grass_lim[0]))
+
+    mean_interp_amp=np.mean(interp_amp)
+    std_interp_amp = np.std(interp_amp)
+
+    return mean_interp_amp, std_interp_amp
+
+# Rebin a waveform
+def rebin_array(arr, bin_size):
+    new_len = len(arr) // bin_size  # Ensure integer division
+    return np.mean(arr[:new_len * bin_size].reshape(new_len, bin_size), axis=1)
+
+
+filename  = sys.argv[1]
+RUN_NUMBER= int(sys.argv[2])
+base_name = os.path.basename(filename)  # Extracts 'run_13852_0000_ldc1_trg0.waveforms.h5'
+outfilename = base_name.replace(".waveforms", "_filtered")
+
+useRaw = False # dont really do the analysis with raw waveforms anymore
+mask=False
+
+thr_split   = 2      # maximum number of samples allowed to be below threshold to consider it a peak
+peak_minlen = 2      # minimum number of samples above threshold in a peak
+peak_maxlen = 10     # maximum number of samples above threshold in a peak
+half_window = 4      # number of samples to each side of a peak maximum to integrate
+tc          = 25e-3  # constant to convert from samples to time or vice versa. 
+noise_sigma = 4      # how many STD above noise for the single PEs to be
+
+dead_pmts = []
+
+# LPR Argon Nominal, short buffer
+if (RUN_NUMBER == 13850 or RUN_NUMBER == 14180):
+    buffer_len  = 2000             # The length of the buffer window
+    grass_lim   = 1050, buffer_len # time window in mus in which to search for single pes
+    noise_lim   = 0, 90            # time window to calculate the noise baseline
+    dead_pmts = [3, 16, 24, 36, 37, 38, 39,40, 41, 48, 53, 58]
+
+# LPR Argon no circulation
+elif (RUN_NUMBER == 13859):
+    buffer_len  = 2000
+    grass_lim   = 1300, buffer_len # grass lim search window longer beacuse of signal size
+    noise_lim   = 0, 90 
+    dead_pmts = [3, 16, 24, 36, 37, 38, 39,40, 41, 48, 53, 58]
+
+# LPR Xe nominal (14498) and LPR Xe hot getter (14780)
+elif (RUN_NUMBER == 14498 or RUN_NUMBER == 14780):
+    buffer_len  = 2600
+    grass_lim   = 1650, buffer_len
+    noise_lim   = 0, 90
+    dead_pmts = [3, 16, 24, 36, 37, 38, 39,40, 41, 48, 53, 58]
+
+# HPR Xe nominal and other conditions with same buffer sizes
+elif (RUN_NUMBER == 16156 or RUN_NUMBER == 16168 or RUN_NUMBER == 16169 or RUN_NUMBER == 16170 or RUN_NUMBER == 16171): 
+    buffer_len  = 2600
+    grass_lim   = 1650, buffer_len
+    noise_lim   = 0, 90
+    dead_pmts = [39, 36, 42, 46] 
+
+# HPR Xe longer buffer
+elif (RUN_NUMBER == 16167): 
+    buffer_len  = 3200
+    grass_lim   = 1650, buffer_len
+    noise_lim   = 0, 90
+    cath_lim    = 2500, 2600
+    dead_pmts = [39, 36, 42, 46] 
+
+# HPR Xe S1 run
+elif (RUN_NUMBER == 16167): 
+    buffer_len  = 2600
+    grass_lim   = 1650, buffer_len
+    noise_lim   = 0, 1550
+    dead_pmts = [39, 36, 42, 46] 
+
+else:
+    raise Exception("Could not find init params for the run. Please Check") 
+
+# Deconvolution function
+deconv = deconv_pmt("next100", RUN_NUMBER, 62400, mask=mask)
+
+# Load in the database for SiPMs
+detector_db = "next100"
+datasipm = load_db.DataSiPM(detector_db, RUN_NUMBER)
+datapmt = load_db.DataPMT(detector_db, RUN_NUMBER)
+
+data = []
+noise_df = []
+
+# Loop over the events
+with tb.open_file(filename) as file:
+    evt_info = file.root.Run.events
+    rwf      = file.root.RD.pmtrwf
+
+    for evt_no, wfs in enumerate(rwf):
+
+        evt_id = evt_info[evt_no][0]
+        print("On event: ", evt_no, " (", evt_id, ")")
+
+        ######## ADD EVENT FILTER CHECK HERE
+
+        _, ts = evt_info[evt_no]
+
+        # Deconvolve the PMT signal
+        wfs = deconv(wfs)
+
+        # Convert the ADC to PE
+        wfs = ADC_to_PE(wfs, datapmt)
+
+        # Zero out the dead PMTs
+        for pmt_ in dead_pmts:
+            wfs[pmt_] = np.arange(wfs[pmt_] .size) * 0
+        
+        # The time binning
+        times   = np.arange(wfs[0].size) * tc # sampling period is in mus
+
+        # Calculate the noise of the PMT within the window
+        noise = []
+        for pmt_no, wf in enumerate(wfs):
+            noise.append(noise_sigma*np.std(wf[int(noise_lim[0]/tc):int(noise_lim[1]/tc)]))
+
+        # Interpolation of the baseline
+        interps = GetBaselineInterp(times, wfs)
+        mean_interp_amp, std_interp_amp = GetInterpParams(interps, grass_lim)
+
+        # Correct the waveforms
+        wfs = CorrectDeconvBaseline(times, grass_lim[0], buffer_len, interps, wfs) # Correct baseline to the end of the waveform
+        wfs_sum_cor = sum_wf(wfs) # corrected summed waveform
+
+        # Search in the grass window
+        # Check the baseline, if we got something really negative
+        # then the deconvolution likely failed, so skip grass calculation
+        min_baseline = min(wfs_sum_cor[int((grass_lim[0]-50)/tc):int((grass_lim[0]+100)/tc)])
+        if (min_baseline > -5):
+            df = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, grass_lim, evt_id, ts, tc)
+            data.append(df)
+
+        else:
+            print("Problem with deconvolution", min_baseline)
+
+        # Do a single PE search in the noise window to characterize this background
+        noise_df_temp = get_PEs_inWindow(times, wfs, noise, thr_split, peak_minlen, peak_maxlen, half_window, noise_lim, evt_id, ts, tc)
+        noise_df_temp["timewin"] = noise_lim[1]
+        noise_df.append(noise_df_temp)
+
+    data     = pd.concat([d for d in data if len(d)], ignore_index=True)
+    data = data.assign(ts = np.array(list(map(datetime.fromtimestamp, data.ts_raw))))
+    noise_df = pd.concat([d for d in noise_df if len(d)], ignore_index=True)
+
+print(data)
+print(noise_df)
+
+outdir = f"/media/argon/HDD_8tb/Krishan/NEXT100Data/alpha/filtered/{RUN_NUMBER}/"
+os.makedirs(outdir, exist_ok=True)
+
+
+with pd.HDFStore(outdir + outfilename, mode='w', complevel=5, complib='zlib') as store:
+    # Write each DataFrame to the file with a unique key
+    store.put('data', data, format='table')
+    store.put('noise_df', noise_df, format='table')
