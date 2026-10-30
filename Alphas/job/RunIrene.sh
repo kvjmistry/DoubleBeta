@@ -5,6 +5,7 @@
 #SBATCH -t 0-1:00 # Maximum execution time (D-HH:MM)
 #SBATCH -o IRENE_%A_%a.out # Standard output
 #SBATCH -e IRENE_%A_%a.err # Standard error
+#SBATCH --array=1-343
 
 start=`date +%s`
 
