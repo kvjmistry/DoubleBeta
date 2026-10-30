@@ -20,20 +20,20 @@ RUN_NUMBER=14498 # 343
 echo "Setting up IC"
 source /home/argon/Projects/Krishan/IC/setup_IC.sh
 
-mkdir -p /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/irene/${run_number}/
-cd       /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/irene/${run_number}/
+mkdir -p /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/irene/${RUN_NUMBER}/
+cd       /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/irene/${RUN_NUMBER}/
 
 
-input_file=$(sed -n "${SLURM_ARRAY_TASK_ID}p" /home/argon/Projects/Krishan/DoubleBeta/Alphas/eventlists/run_${run_number}_files.txt)
+input_file=$(sed -n "${SLURM_ARRAY_TASK_ID}p" /home/argon/Projects/Krishan/DoubleBeta/Alphas/eventlists/run_${RUN_NUMBER}_files.txt | tr -d '\r')
 echo "Input File: $input_file"
 
 # Make the new filename
-base=$(basename "$filepath" .waveforms.h5)
+base=$(basename "$input_file" .waveforms.h5)
 outfile="${base}_irene.h5"
 
 echo "$outfile"
 
-city irene /home/argon/Projects/Krishan/DoubleBeta/Alphas/config/irene_${run_number}.conf -i $input_file -o ${outfile}
+city irene /home/argon/Projects/Krishan/DoubleBeta/Alphas/config/irene_${RUN_NUMBER}.conf -i $input_file -o ${outfile}
 
 
 ls -ltrh 
