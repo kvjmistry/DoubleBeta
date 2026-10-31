@@ -9,11 +9,12 @@ import pickle
 # RUN_NUMBER=13859
 #RUN_NUMBER=14180
 #RUN_NUMBER=14498
-RUN_NUMBER=14780
+#RUN_NUMBER=14780
+RUN_NUMBER=16156
 
-#mode="filt"
+mode="filt"
 # mode="data"
-mode="hist"
+# mode="hist"
 # mode="sipm"
 
 
