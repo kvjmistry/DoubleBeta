@@ -33,7 +33,7 @@ outfile="${base}_sophronia.h5"
 
 echo "$outfile"
 
-city irene /home/argon/Projects/Krishan/DoubleBeta/Alphas/config/sophronia_${RUN_NUMBER}.conf -i $input_file -o ${outfile}
+city sophronia /home/argon/Projects/Krishan/DoubleBeta/Alphas/config/sophronia_${RUN_NUMBER}.conf -i $input_file -o ${outfile}
 
 
 ls -ltrh 
