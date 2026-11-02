@@ -36,7 +36,7 @@ echo "$outfile"
 city irene /home/argon/Projects/Krishan/DoubleBeta/Alphas/config/irene_${RUN_NUMBER}.conf -i $input_file -o ${outfile}
 
 
-ls -ltrh 
+# ls -ltrh 
 
 echo "FINISHED....EXITING"
 

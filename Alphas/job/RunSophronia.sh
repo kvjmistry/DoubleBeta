@@ -24,7 +24,7 @@ mkdir -p /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/sophronia/${RUN_NU
 cd       /media/argon/HardDrive_8TB/Krishan/NEXT100Data/alpha/sophronia/${RUN_NUMBER}/
 
 
-input_file=$(sed -n "${SLURM_ARRAY_TASK_ID}p" /home/argon/Projects/Krishan/DoubleBeta/Alphas/eventlists/run_${RUN_NUMBER}_files.txt | tr -d '\r')
+input_file=$(sed -n "${SLURM_ARRAY_TASK_ID}p" /home/argon/Projects/Krishan/DoubleBeta/Alphas/eventlists/run_${RUN_NUMBER}_irene.txt | tr -d '\r')
 echo "Input File: $input_file"
 
 # Make the new filename
@@ -36,7 +36,7 @@ echo "$outfile"
 city sophronia /home/argon/Projects/Krishan/DoubleBeta/Alphas/config/sophronia_${RUN_NUMBER}.conf -i $input_file -o ${outfile}
 
 
-ls -ltrh 
+# ls -ltrh 
 
 echo "FINISHED....EXITING"
 
