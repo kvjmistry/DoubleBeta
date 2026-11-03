@@ -26,7 +26,7 @@ source /software/IC/setup_IC.sh
 echo "Printing esmeralda file"
 
 # Update the run number
-sed -i "s#.*run_number.*#run_number = {RUN_NUMBER}#" esmeralda.conf
+sed -i "s#.*run_number.*#run_number = ${RUN_NUMBER}#" esmeralda.conf
 
 cat esmeralda.conf
 

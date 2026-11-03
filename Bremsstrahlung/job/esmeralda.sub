@@ -12,7 +12,7 @@ pressure=4bar
 
 recostage=esmeralda
 
-RUN_NUMBER=0 # for MC
+RUN_NUMBER=0
 # RUN_NUMBER=15589
 #RUN_NUMBER=15590
 
