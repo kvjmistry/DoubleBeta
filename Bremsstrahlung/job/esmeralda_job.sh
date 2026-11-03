@@ -23,9 +23,6 @@ echo "Setting Up Software"
 source /software/nexus/setup_nexus.sh
 source /software/IC/setup_IC.sh
 
-# Copy the updated esmeralda file to IC directory
-cp esmeralda.py /software/IC/invisible_cities/cities/
-
 echo "Printing esmeralda file"
 cat esmeralda.conf
 
