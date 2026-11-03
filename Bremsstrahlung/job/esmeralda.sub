@@ -12,20 +12,24 @@ pressure=4bar
 
 recostage=esmeralda
 
+RUN_NUMBER=0 # for MC
+# RUN_NUMBER=15589
+#RUN_NUMBER=15590
+
 executable = $(recostage)_job.sh
-arguments = $(Process) $(jobname) $(pressure) $(infile)
+arguments = $(Process) $(jobname) $(RUN_NUMBER) $(infile)
 
 # Specify the name of the log, standard error, and standard output (or "screen output") files. Wherever you see $(Cluster), HTCondor will insert the 
 #  queue number assigned to this set of jobs at the time of submission.
-log    = jobs/$(jobname)_$(recostage)/$(pressure)/jobid$(Process)/$(Cluster)_$(Process).log
-error  = jobs/$(jobname)_$(recostage)/$(pressure)/jobid$(Process)/$(Cluster)_$(Process).err
-output = jobs/$(jobname)_$(recostage)/$(pressure)/jobid$(Process)/$(Cluster)_$(Process).out
+log    = jobs/$(jobname)_$(recostage)/$(pressure)/$(RUN_NUMBER)/jobid$(Process)/$(Cluster)_$(Process).log
+error  = jobs/$(jobname)_$(recostage)/$(pressure)/$(RUN_NUMBER)/jobid$(Process)/$(Cluster)_$(Process).err
+output = jobs/$(jobname)_$(recostage)/$(pressure)/$(RUN_NUMBER)/jobid$(Process)/$(Cluster)_$(Process).out
 
 # Transfer input files
-transfer_input_files = $(HOME_LOCATION)/config/esmeralda.conf,$(OSDF_LOCATION)/job/Production/$(jobname)/4bar/sophronia/$(infile)
+transfer_input_files = $(HOME_LOCATION)/config/esmeralda.conf,$(OSDF_LOCATION)/job/Production/$(jobname)/4bar/sophronia_$(RUN_NUMBER)/$(infile)
 
 # Transfer output files
-transfer_output_remaps = "$(jobname).tar = $(OSDF_LOCATION)/job/Production/$(jobname)/$(pressure)_$(recostage)/$(jobname)_$(Cluster)_$(Process).tar"
+transfer_output_remaps = "$(jobname).tar = $(OSDF_LOCATION)/job/Production/$(jobname)/$(pressure)_$(recostage)_$(RUN_NUMBER)/$(jobname)_$(Cluster)_$(Process).tar"
 
 # Specify Job duration category as "Medium" (expected runtime <10 hr) or "Long" (expected runtime <20 hr). 
 +JobDurationCategory = "Medium"
@@ -45,4 +49,4 @@ request_disk = 5GB
 max_idle = 2000
 
 # Tell HTCondor the number of instances to run:
-queue infile from filelists/$(jobname)_$(recostage).txt
+queue infile from filelists/$(jobname)_$(recostage)_$(RUN_NUMBER).txt

@@ -8,8 +8,8 @@ echo "The JOBID number is: ${JOBID}"
 JOBNAME=$2
 echo "The JOBNAME number is: ${JOBNAME}" 
 
-PRESSURE=$3
-echo "The pressure is: ${PRESSURE}" 
+RUN_NUMBER=$3
+echo "The RUN_NUMBER is: ${RUN_NUMBER}" 
 
 INFILE=$4
 echo "The input file is: ${INFILE}" 
@@ -24,6 +24,10 @@ source /software/nexus/setup_nexus.sh
 source /software/IC/setup_IC.sh
 
 echo "Printing esmeralda file"
+
+# Update the run number
+sed -i "s#.*run_number.*#run_number = {RUN_NUMBER}#" esmeralda.conf
+
 cat esmeralda.conf
 
 # Update the filename
@@ -41,9 +45,9 @@ tar -cvf ${JOBNAME}.tar *.h5
 
 # Cleanup
 rm *.h5
-rm *.mac
+# rm *.mac
 rm *.conf
-rm *.py
+# rm *.py
 
 echo "FINISHED....EXITING" 
 
