@@ -12,8 +12,6 @@ pressure=4bar
 
 recostage=esmeralda
 
-NewProcess = $(Process)
-
 executable = $(recostage)_job.sh
 arguments = $(Process) $(jobname) $(pressure) $(infile)
 
@@ -24,7 +22,7 @@ error  = jobs/$(jobname)_$(recostage)/$(pressure)/jobid$(Process)/$(Cluster)_$(P
 output = jobs/$(jobname)_$(recostage)/$(pressure)/jobid$(Process)/$(Cluster)_$(Process).out
 
 # Transfer input files
-transfer_input_files = $(HOME_LOCATION)/scripts/esmeralda.py,$(OSDF_LOCATION)/job/Production/$(jobname)/4bar/sophronia/$(infile)
+transfer_input_files = $(HOME_LOCATION)/config/esmeralda.conf,$(OSDF_LOCATION)/job/Production/$(jobname)/4bar/sophronia/$(infile)
 
 # Transfer output files
 transfer_output_remaps = "$(jobname).tar = $(OSDF_LOCATION)/job/Production/$(jobname)/$(pressure)_$(recostage)/$(jobname)_$(Cluster)_$(Process).tar"
