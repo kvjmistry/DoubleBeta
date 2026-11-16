@@ -27,6 +27,7 @@ echo "Printing esmeralda file"
 
 # Update the run number
 sed -i "s#.*run_number.*#run_number = ${RUN_NUMBER}#" esmeralda.conf
+sed -i "s#.*filename.*#  filename    = \"run_${RUN_NUMBER}_kr_map_zemrude.h5\",#" esmeralda.conf
 
 cat esmeralda.conf
 
