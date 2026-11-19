@@ -26,7 +26,7 @@ error  = jobs/$(jobname)_$(recostage)/$(pressure)/$(RUN_NUMBER)/jobid$(Process)/
 output = jobs/$(jobname)_$(recostage)/$(pressure)/$(RUN_NUMBER)/jobid$(Process)/$(Cluster)_$(Process).out
 
 # Transfer input files
-transfer_input_files = $(HOME_LOCATION)/config/esmeralda.conf,$(HOME_LOCATION)/maps/run_$(RUN_NUMBER)_kr_map_zemrude.h5,$(OSDF_LOCATION)/job/Production/$(jobname)/4bar/sophronia_$(RUN_NUMBER)/$(infile)
+transfer_input_files = $(HOME_LOCATION)/config/esmeralda.conf,$(HOME_LOCATION)/maps/3Dmap_$(RUN_NUMBER)_median_zemrude.h5,$(OSDF_LOCATION)/job/Production/$(jobname)/4bar/sophronia_$(RUN_NUMBER)/$(infile)
 
 # Transfer output files
 transfer_output_remaps = "$(jobname).tar = $(OSDF_LOCATION)/job/Production/$(jobname)/$(pressure)_$(recostage)_$(RUN_NUMBER)/$(jobname)_$(Cluster)_$(Process).tar"
