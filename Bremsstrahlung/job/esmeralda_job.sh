@@ -38,6 +38,7 @@ echo "Running esmeralda"
 city esmeralda esmeralda.conf -i $INFILE -o ${fileout}
 
 rm *sophronia*
+rm *zemrude*
 
 ls -ltrh
 
